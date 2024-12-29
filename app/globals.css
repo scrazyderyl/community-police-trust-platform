@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 .head_text {
     @apply mt-10 text-2xl font-extrabold leading-[1.15] text-black sm:text-5xl;
 }
@@ -17,4 +16,9 @@
 
 .btn_md {
     @apply inline-flex items-center justify-center align-middle ml-2 bg-blue-500 px-5 py-2 text-white duration-150 hover:bg-blue-600 rounded-md
+}
+
+#map{
+    width: 80%;
+    height: 500px;
 }
