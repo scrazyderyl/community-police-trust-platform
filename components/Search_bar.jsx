@@ -7,7 +7,7 @@ const Search_bar = ({ show_map_btn }) => {
   const [input, setInput] = useState('')
 
   return (
-    <div className="flex flex-col items-center mt-10">
+    <div className="flex flex-col items-center mt-5">
       <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white p-5 shadow-sm">
         <div className="flex overflow-hidden rounded-md bg-gray-200 focus:outline focus:outline-blue-500">
           <input 
