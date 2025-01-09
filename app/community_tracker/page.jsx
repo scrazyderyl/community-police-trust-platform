@@ -69,9 +69,9 @@ const Community_tracker = () => {
   
       {/* Add Record Button and Help Icon */}
       <div className="flex items-center justify-center mt-6 space-x-4">
-        <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
+        <a href="/create_record" className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
           + Add Record
-        </button>
+        </a>
       </div>
   
       {/* Records Table */}
