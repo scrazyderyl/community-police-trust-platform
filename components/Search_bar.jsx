@@ -1,21 +1,39 @@
 "use client"
-import React from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 
-// Destructure show_map_btn from props
-const Search_bar = ({ show_map_btn }) => {
-  const [input, setInput] = useState('')
+// Destructure show_map_btn and onSearch from props
+const Search_bar = ({ show_map_btn, onSearch }) => {
+  const [input, setInput] = useState('') // Manage input state
+
+  // Handle form submission
+  const handleSearch = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    if (onSearch) {
+      onSearch(input); // Pass the input value to the parent function
+    }
+  }
 
   return (
     <div className="flex flex-col items-center mt-5">
       <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white p-5 shadow-sm">
-        <div className="flex overflow-hidden rounded-md bg-gray-200 focus:outline focus:outline-blue-500">
+        <form 
+          onSubmit={handleSearch} 
+          className="flex overflow-hidden rounded-md bg-gray-200 focus:outline focus:outline-blue-500"
+        >
+          {/* Input Field */}
           <input 
             type="text" 
             placeholder="Search Location"
             className="w-full rounded-bl-md rounded-tl-md bg-gray-100 px-4 py-2.5 text-gray-700 focus:outline-blue-500"
+            value={input} // Bind input value
+            onChange={(e) => setInput(e.target.value)} // Update state on input
           />
-          <button type="submit" className="btn_sm">
+          
+          {/* Submit Button */}
+          <button 
+            type="submit" 
+            className="btn_sm"
+          >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               fill="none" 
@@ -41,10 +59,11 @@ const Search_bar = ({ show_map_btn }) => {
               Map
             </a>
           )}
-        </div>
+        </form>
       </div>
     </div>
   )
 }
 
 export default Search_bar
+

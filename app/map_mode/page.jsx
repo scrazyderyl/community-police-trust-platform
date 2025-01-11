@@ -195,7 +195,68 @@ const Map_mode = () => {
       }
     );
   };
+
+  // Geocode Address: Get coordinates from user input
+  function geocodeAddress(platform, query, callback) {
+      const geocoder = platform.getSearchService();
+      geocoder.geocode(
+        {
+          q: query,
+        },
+        (result) => {
+          if (result.items && result.items.length > 0) {
+            const location = result.items[0].position;
+            const locationInfo = result.items[0].address;
+            callback(null, location, locationInfo);
+          } else {
+            callback("Location not found", null);
+          }
+        },
+        (error) => {
+          console.error("Geocoding failed:", error);
+          callback("Error retrieving location", null);
+        }
+      );
+    }
   
+  // Handle Address Search
+  function handleSearch(inputVal) {
+      const query = inputVal.trim();
+      if (query) {
+        geocodeAddress(platformRef.current, query, (error, location, locationInfo) => {
+          if (error) {
+            alert(error);
+          } else {
+          const pos = location;
+          const divInfo = `
+            <div>
+              <strong>Location Details</strong><br/>
+              ${locationInfo.label || "Address not found"}<br/>
+              <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}
+            </div>
+          `;
+          console.log(pos);
+          const userCoords = {
+            lat: pos.lat,
+            lng: pos.lng,
+          };
+          mapInstance.current.setCenter(pos);
+          // Remove all existing bubbles
+          const bubbles = uiRef.current.getBubbles();
+          bubbles.forEach((b) => uiRef.current.removeBubble(b));
+  
+          // Create and add a new bubble
+          const newBubble = new H.ui.InfoBubble(userCoords, {
+            content: divInfo,
+          });
+          setBubble(newBubble);
+          uiRef.current.addBubble(newBubble);
+          }
+        });
+      } else {
+        alert("Please enter a valid address.");
+      }
+    }
 
   return (
     <div className="flex flex-col h-screen">
@@ -229,7 +290,14 @@ const Map_mode = () => {
       {/* Full-width Search Bar */}
       <div className="w-full flex justify-center">
         <div className="w-3/4 flex justify-center items-center space-x-4">  {/* Flex row & spacing */}
-          <Search_bar show_map_btn={false} />
+          <Search_bar 
+              show_map_btn={false} 
+              onSearch={(value) => {
+                console.log("Search Value:", value);
+                // Add logic to handle the search value here
+                handleSearch(value);
+              }} 
+            />
           <button className="btn_md mt-5 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" onClick={locateUser}>
             Locate Me
           </button>
