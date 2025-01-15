@@ -88,7 +88,7 @@ const Map_mode = () => {
     }, 250)
   
     return () => clearInterval(interval);
-  }, [isClient, scriptsLoaded]);
+  }, [isClient, scriptsLoaded, scriptsLoaded2, scriptsLoaded3, scriptsLoaded4]);
   
 
   // Function to locate the current location of the user.
