@@ -3,6 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Search_bar from "@/components/Search_bar";
 
+/**
+ * 
+ 
+ This page has been archived.
+ * 
+ */
+
 const Map_mode = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
