@@ -23,21 +23,51 @@ const Map_mode = () => {
   useEffect(() => {
     setIsClient(true);
   
+    const maxRetries = 5;
     let retryCount = 0;
-    const maxRetries = 50; // Retry for 50 intervals (total: 5 seconds)
-    const intervalDelay = 100; // Interval delay in milliseconds
   
-    const interval = setInterval(() => {
-      if (
-        scriptsLoaded &&
-        scriptsLoaded2 &&
-        scriptsLoaded3 &&
-        scriptsLoaded4 &&
-        typeof H !== "undefined" &&
-        mapRef.current
-      ) {
-        clearInterval(interval);
+    const loadScripts = async () => {
+      const loadScript = (src) =>
+        new Promise((resolve, reject) => {
+          if (document.querySelector(`script[src="${src}"]`)) {
+            resolve(); // Script already loaded
+            return;
+          }
   
+          const script = document.createElement("script");
+          script.src = src;
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+  
+      try {
+        await loadScript("https://js.api.here.com/v3/3.1/mapsjs-core.js");
+        await loadScript("https://js.api.here.com/v3/3.1/mapsjs-service.js");
+        await loadScript("https://js.api.here.com/v3/3.1/mapsjs-ui.js");
+        await loadScript("https://js.api.here.com/v3/3.1/mapsjs-mapevents.js");
+        
+  
+        // Ensure H is defined before proceeding
+        if (typeof H === "undefined") {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.warn(`Retrying to load HERE Maps scripts... Attempt ${retryCount}`);
+            setTimeout(loadScripts, 1000); // Retry after 1 second
+            return;
+          } else {
+            console.error("Failed to load HERE Maps scripts after multiple attempts.");
+            return;
+          }
+        }
+  
+        // Dispose of existing map instance if it exists
+        if (mapInstance.current) {
+          mapInstance.current.dispose();
+        }
+  
+        // Create new platform and map instance
         const platform = new H.service.Platform({
           apikey: api_key,
         });
@@ -71,21 +101,23 @@ const Map_mode = () => {
   
           showAddressBubble(coord);
         });
-  
-        return;
+      } catch (error) {
+        console.error("Error loading HERE Maps scripts or initializing map:", error);
       }
+    };
   
-      retryCount++;
-      if (retryCount > maxRetries) {
-        clearInterval(interval);
-        console.error("Failed to initialize HERE Maps after multiple retries");
+    loadScripts();
+  
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.dispose();
+        mapInstance.current = null; // Ensure it's reset
       }
-    }, intervalDelay);
+    };
+  }, [isClient]);
   
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, [isClient, scriptsLoaded, scriptsLoaded2, scriptsLoaded3, scriptsLoaded4]);
   
-
+  
   // Function to locate the current location of the user.
   const locateUser = () => {
     if (navigator.geolocation) {
