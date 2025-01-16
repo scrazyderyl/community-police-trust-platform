@@ -14,6 +14,7 @@ const Map_mode = () => {
   const [scriptsLoaded2, setScriptsLoaded2] = useState(false);
   const [scriptsLoaded3, setScriptsLoaded3] = useState(false);
   const [scriptsLoaded4, setScriptsLoaded4] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   const [bubble, setBubble] = useState(null);
 
@@ -62,6 +63,7 @@ const Map_mode = () => {
         }, 100);
   
         console.log("Map initialized successfully");
+        setIsMapReady(true);
   
         // Add event listener for map click
         map.addEventListener("tap", (evt) => {
@@ -85,7 +87,6 @@ const Map_mode = () => {
   
     return () => clearInterval(interval); // Cleanup interval on unmount
   }, [isClient, scriptsLoaded, scriptsLoaded2, scriptsLoaded3, scriptsLoaded4]);
-  
   
   
   // Function to locate the current location of the user.
@@ -150,6 +151,7 @@ const Map_mode = () => {
       alert("Geolocation is not supported by your browser.");
     }
   };
+  
   
   // Show the information of a location when the user clicks.
   const showAddressBubble = (coords) => {
@@ -312,6 +314,9 @@ const Map_mode = () => {
               height: "450px", // Set height
             }}
           ></div>
+        )}
+        {!isMapReady && (
+          <div>Please refresh the page</div>
         )}
       </div>
     </div>
