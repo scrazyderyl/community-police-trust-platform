@@ -23,10 +23,6 @@ const Map_mode = () => {
   useEffect(() => {
     setIsClient(true);
     
-    let retryCount = 0;
-    const maxRetries = 20;  // Retry for 20 intervals (4 seconds total)
-    // set up intervals to ensure the scripts are loaded.
-    const interval = setInterval(()=>{
       if (
         scriptsLoaded &&
         scriptsLoaded2 &&
@@ -35,8 +31,6 @@ const Map_mode = () => {
         typeof H !== "undefined" &&
         mapRef.current
       ){
-        clearInterval(interval);
-
         const platform = new H.service.Platform({
           apikey: api_key,
         });
@@ -79,15 +73,8 @@ const Map_mode = () => {
           map.dispose();
         };
       }else{
-        retryCount++;
-      if (retryCount > maxRetries) {
-        clearInterval(interval);  // Stop retrying after max retries
-        console.error("Map initialization failed after multiple attempts");
+        
       }
-      }
-    }, 250)
-  
-    return () => clearInterval(interval);
   }, [isClient, scriptsLoaded, scriptsLoaded2, scriptsLoaded3, scriptsLoaded4]);
   
 
