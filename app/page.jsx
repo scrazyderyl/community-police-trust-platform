@@ -22,7 +22,12 @@ const Map_mode = () => {
   
   useEffect(() => {
     setIsClient(true);
-    
+  
+    let retryCount = 0;
+    const maxRetries = 50; // Retry for 50 intervals (total: 5 seconds)
+    const intervalDelay = 100; // Interval delay in milliseconds
+  
+    const interval = setInterval(() => {
       if (
         scriptsLoaded &&
         scriptsLoaded2 &&
@@ -30,51 +35,54 @@ const Map_mode = () => {
         scriptsLoaded4 &&
         typeof H !== "undefined" &&
         mapRef.current
-      ){
+      ) {
+        clearInterval(interval);
+  
         const platform = new H.service.Platform({
           apikey: api_key,
         });
         platformRef.current = platform;
-      
+  
         const defaultLayers = platform.createDefaultLayers();
-      
-        const map = new H.Map(
-          mapRef.current,
-          defaultLayers.vector.normal.map,
-          {
-            center: { lat: 40.444611, lng: -79.952108 },
-            zoom: 14,
-          }
-        );
-      
+  
+        const map = new H.Map(mapRef.current, defaultLayers.vector.normal.map, {
+          center: { lat: 40.444611, lng: -79.952108 },
+          zoom: 14,
+        });
+  
         mapInstance.current = map;
-      
+  
         const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
         const ui = H.ui.UI.createDefault(map, defaultLayers);
         uiRef.current = ui;
-      
+  
         setTimeout(() => {
           map.getViewPort().resize();
         }, 100);
-      
+  
         console.log("Map initialized successfully");
-      
+  
         // Add event listener for map click
         map.addEventListener("tap", (evt) => {
           const coord = map.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
           );
-      
+  
           showAddressBubble(coord);
         });
-      
-        return () => {
-          map.dispose();
-        };
-      }else{
-        
+  
+        return;
       }
+  
+      retryCount++;
+      if (retryCount > maxRetries) {
+        clearInterval(interval);
+        console.error("Failed to initialize HERE Maps after multiple retries");
+      }
+    }, intervalDelay);
+  
+    return () => clearInterval(interval); // Cleanup interval on unmount
   }, [isClient, scriptsLoaded, scriptsLoaded2, scriptsLoaded3, scriptsLoaded4]);
   
 
