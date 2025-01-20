@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Search_bar from "@/components/Search_bar";
+import { findMunicipalityByZipCode } from "@/services/GeoService";
 
 const Map_mode = () => {
   const mapRef = useRef(null);
@@ -15,6 +16,8 @@ const Map_mode = () => {
   const [scriptsLoaded3, setScriptsLoaded3] = useState(false);
   const [scriptsLoaded4, setScriptsLoaded4] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [showInfoCard, setShowInfoCard] = useState(false);
+
 
   const [bubble, setBubble] = useState(null);
 
@@ -71,7 +74,7 @@ const Map_mode = () => {
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
           );
-  
+          
           showAddressBubble(coord);
         });
   
@@ -118,20 +121,45 @@ const Map_mode = () => {
             (result) => {
               if (result.items.length > 0) {
                 const location = result.items[0].address;
-                const locationInfo = `
-                  <div>
-                    <strong>Location Details</strong><br/>
-                    ${location.label || "Address not found"}<br/>
-                    <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}
-                  </div>
-                `;
-  
-                // Create and show info bubble with location data
-                const newBubble = new H.ui.InfoBubble(userCoords, {
-                  content: locationInfo,
-                });
-                setBubble(newBubble);
-                uiRef.current.addBubble(newBubble);
+                findMunicipalityByZipCode("15213-3107")
+                  .then((result) => {
+                      if (result) {
+                        
+                          const locationInfo = `
+                              <div>
+                                <strong>Location Details</strong><br/>
+                                ${location.label || "Address not found"}<br/>
+                                <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
+                                <strong>Filing Information:</strong> ${result.filing_info}
+                              </div>
+                            `;
+              
+                            // Create and show info bubble with location data
+                            const newBubble = new H.ui.InfoBubble(userCoords, {
+                              content: locationInfo,
+                            });
+                            setBubble(newBubble);
+                            uiRef.current.addBubble(newBubble);
+                      } else {
+                          
+                          const locationInfo = `
+                              <div>
+                                <strong>Location Details</strong><br/>
+                                ${location.label || "Address not found"}<br/>
+                                <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
+                                <strong>Filing Information:</strong> No Record Found
+                              </div>
+                            `;
+              
+                            // Create and show info bubble with location data
+                            const newBubble = new H.ui.InfoBubble(userCoords, {
+                              content: locationInfo,
+                            });
+                            setBubble(newBubble);
+                            uiRef.current.addBubble(newBubble);
+                      }
+                  })
+                  .catch((error) => console.error(error));
               } else {
                 alert("Address not found for this location.");
               }
@@ -165,24 +193,50 @@ const Map_mode = () => {
       (result) => {
         if (result.items.length > 0) {
           const location = result.items[0].address;
-          const locationInfo = `
-            <div>
-              <strong>Location Details</strong><br/>
-              ${location.label || "Address not found"}<br/>
-              <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}
-            </div>
-          `;
+          findMunicipalityByZipCode(location.postalCode)
+            .then((result) => {
+                if (result) {
+                  const locationInfo = `
+                    <div>
+                      <strong>Location Details</strong><br/>
+                      ${location.label || "Address not found"}<br/>
+                      <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
+                      <strong>Filing Information:</strong> ${result.filing_info} 
+                    </div>
+                  `;
+                  
+                  const bubbles = uiRef.current.getBubbles();
+                  bubbles.forEach((b) => uiRef.current.removeBubble(b));
           
-          // Remove all existing bubbles
-          const bubbles = uiRef.current.getBubbles();
-          bubbles.forEach((b) => uiRef.current.removeBubble(b));
-  
-          // Create and add a new bubble
-          const newBubble = new H.ui.InfoBubble(coords, {
-            content: locationInfo,
-          });
-          setBubble(newBubble);
-          uiRef.current.addBubble(newBubble);
+                  // Create and add a new bubble
+                  const newBubble = new H.ui.InfoBubble(coords, {
+                    content: locationInfo,
+                  });
+                  setBubble(newBubble);
+                  uiRef.current.addBubble(newBubble);
+                } else {
+                    console.log("No municipality found.");
+                    const locationInfo = `
+                    <div>
+                      <strong>Location Details</strong><br/>
+                      ${location.label || "Address not found"}<br/>
+                      <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
+                      <strong>Filing Information:</strong> No Record Found
+                    </div>
+                  `;
+                    
+                    const bubbles = uiRef.current.getBubbles();
+                    bubbles.forEach((b) => uiRef.current.removeBubble(b));
+            
+                    // Create and add a new bubble
+                    const newBubble = new H.ui.InfoBubble(coords, {
+                      content: locationInfo,
+                    });
+                    setBubble(newBubble);
+                    uiRef.current.addBubble(newBubble);
+                }
+            })
+            .catch((error) => console.error(error));
           
         } else {
           alert("No address found at this location.");
@@ -227,29 +281,64 @@ const Map_mode = () => {
             alert(error);
           } else {
           const pos = location;
-          const divInfo = `
-            <div>
-              <strong>Location Details</strong><br/>
-              ${locationInfo.label || "Address not found"}<br/>
-              <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}
-            </div>
-          `;
-          console.log(pos);
-          const userCoords = {
-            lat: pos.lat,
-            lng: pos.lng,
-          };
-          mapInstance.current.setCenter(pos);
-          // Remove all existing bubbles
-          const bubbles = uiRef.current.getBubbles();
-          bubbles.forEach((b) => uiRef.current.removeBubble(b));
-  
-          // Create and add a new bubble
-          const newBubble = new H.ui.InfoBubble(userCoords, {
-            content: divInfo,
-          });
-          setBubble(newBubble);
-          uiRef.current.addBubble(newBubble);
+          findMunicipalityByZipCode(locationInfo.postalCode)
+            .then((result) => {
+                if (result) {
+                    console.log("Municipality found:", result);
+                    const divInfo = `
+                        <div>
+                          <strong>Location Details</strong><br/>
+                          ${locationInfo.label || "Address not found"}<br/>
+                          <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}<br/>
+                          <strong>Filing Information:</strong> ${result.filing_info}
+                        </div>
+                      `;
+                      console.log(pos);
+                      const userCoords = {
+                        lat: pos.lat,
+                        lng: pos.lng,
+                      };
+                      mapInstance.current.setCenter(pos);
+                      // Remove all existing bubbles
+                      const bubbles = uiRef.current.getBubbles();
+                      bubbles.forEach((b) => uiRef.current.removeBubble(b));
+              
+                      // Create and add a new bubble
+                      const newBubble = new H.ui.InfoBubble(userCoords, {
+                        content: divInfo,
+                      });
+                      setBubble(newBubble);
+                      uiRef.current.addBubble(newBubble);
+                } else {
+                    console.log("No municipality found.");
+                    
+                }
+            })
+            .catch((error) => console.error(error));
+            const divInfo = `
+                        <div>
+                          <strong>Location Details</strong><br/>
+                          ${locationInfo.label || "Address not found"}<br/>
+                          <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}<br/>
+                          <strong>Filing Information:</strong> No Record Found
+                        </div>
+                      `;
+                      console.log(pos);
+                      const userCoords = {
+                        lat: pos.lat,
+                        lng: pos.lng,
+                      };
+                      mapInstance.current.setCenter(pos);
+                      // Remove all existing bubbles
+                      const bubbles = uiRef.current.getBubbles();
+                      bubbles.forEach((b) => uiRef.current.removeBubble(b));
+              
+                      // Create and add a new bubble
+                      const newBubble = new H.ui.InfoBubble(userCoords, {
+                        content: divInfo,
+                      });
+                      setBubble(newBubble);
+                      uiRef.current.addBubble(newBubble);
           }
         });
       } else {
@@ -288,20 +377,52 @@ const Map_mode = () => {
       
       {/* Full-width Search Bar */}
       <div className="w-full flex justify-center">
-        <div className="w-3/4 flex justify-center items-center space-x-4">  {/* Flex row & spacing */}
-          <Search_bar 
-              show_map_btn={false} 
-              onSearch={(value) => {
-                console.log("Search Value:", value);
-                // Add logic to handle the search value here
-                handleSearch(value);
-              }} 
-            />
-          <button className="btn_md mt-5 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" onClick={locateUser}>
-            Locate Me
-          </button>
-        </div>
-      </div>
+  <div className="w-3/4 flex justify-center items-center space-x-4">
+    {/* Flex row & spacing */}
+    <Search_bar
+      show_map_btn={false}
+      onSearch={(value) => {
+        console.log("Search Value:", value);
+        handleSearch(value);
+      }}
+    />
+    <button
+      className="btn_md mt-5 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+      onClick={locateUser}
+    >
+      Locate Me
+    </button>
+    {/* "?" Button */}
+    <button
+      className="w-7 h-7 mt-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-lg font-bold text-gray-700 hover:bg-gray-400"
+      onClick={() => setShowInfoCard(true)}
+    >
+      ?
+    </button>
+  </div>
+
+  {/* Introduction Card */}
+  {showInfoCard && (
+    <div
+      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-3/4 max-w-md p-6 bg-white border border-gray-300 rounded-lg shadow-lg text-center"
+    >
+      <h2 className="text-lg font-semibold text-gray-800">
+        About This Website
+      </h2>
+      <p className="text-sm text-gray-600 mt-2">
+        This website allows users to search for locations, view complaint information, and track status updates for reported issues.
+      </p>
+      <button
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        onClick={() => setShowInfoCard(false)}
+      >
+        Close
+      </button>
+    </div>
+  )}
+</div>
+
+
       
 
       <div id="map_container" className="flex justify-center mt-10">
