@@ -122,15 +122,27 @@ const Map_mode = () => {
               if (result.items.length > 0) {
                 const location = result.items[0].address;
                 findMunicipalityByZipCode("15213-3107")
-                  .then((result) => {
-                      if (result) {
-                        
+                  .then((results) => {
+                      if (results) {
+                        let filingInfo = "";
+
+                if (results && results.length > 0) {
+                  // Generate filing information for each result
+                  filingInfo = results
+                    .map(
+                      (result) =>
+                        `<strong>${result.name}:</strong> ${result.filing_info}`
+                    )
+                    .join("<br/>");
+                } else {
+                  filingInfo = "No Record Found";
+                }
                           const locationInfo = `
                               <div>
                                 <strong>Location Details</strong><br/>
                                 ${location.label || "Address not found"}<br/>
                                 <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
-                                <strong>Filing Information:</strong> ${result.filing_info}
+                                <strong>Filing Information:</strong><br/> ${filingInfo}
                               </div>
                             `;
               
@@ -194,14 +206,27 @@ const Map_mode = () => {
         if (result.items.length > 0) {
           const location = result.items[0].address;
           findMunicipalityByZipCode(location.postalCode)
-            .then((result) => {
-                if (result) {
+            .then((results) => {
+                if (results) {
+                  let filingInfo = "";
+
+                if (results && results.length > 0) {
+                  // Generate filing information for each result
+                  filingInfo = results
+                    .map(
+                      (result) =>
+                        `<strong>${result.name}:</strong> ${result.filing_info}`
+                    )
+                    .join("<br/>");
+                } else {
+                  filingInfo = "No Record Found";
+                }
                   const locationInfo = `
                     <div>
                       <strong>Location Details</strong><br/>
                       ${location.label || "Address not found"}<br/>
                       <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
-                      <strong>Filing Information:</strong> ${result.filing_info} 
+                      <strong>Filing Information:</strong><br/> ${filingInfo} 
                     </div>
                   `;
                   
@@ -282,15 +307,27 @@ const Map_mode = () => {
           } else {
           const pos = location;
           findMunicipalityByZipCode(locationInfo.postalCode)
-            .then((result) => {
-                if (result) {
-                    console.log("Municipality found:", result);
+            .then((results) => {
+                if (results) {
+                  let filingInfo = "";
+
+                  if (results && results.length > 0) {
+                    // Generate filing information for each result
+                    filingInfo = results
+                      .map(
+                        (result) =>
+                          `<strong>${result.name}:</strong> ${result.filing_info}`
+                      )
+                      .join("<br/>");
+                  } else {
+                    filingInfo = "No Record Found";
+                  }
                     const divInfo = `
                         <div>
                           <strong>Location Details</strong><br/>
                           ${locationInfo.label || "Address not found"}<br/>
                           <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}<br/>
-                          <strong>Filing Information:</strong> ${result.filing_info}
+                          <strong>Filing Information:</strong><br/> ${filingInfo}
                         </div>
                       `;
                       console.log(pos);
