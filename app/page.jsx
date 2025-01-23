@@ -52,7 +52,7 @@ const Map_mode = () => {
   
         const map = new H.Map(mapRef.current, defaultLayers.vector.normal.map, {
           center: { lat: 40.444611, lng: -79.952108 },
-          zoom: 14,
+          zoom: 10,
         });
   
         mapInstance.current = map;
@@ -382,6 +382,8 @@ const Map_mode = () => {
         alert("Please enter a valid address.");
       }
     }
+
+  // auto suggestion 
 
   return (
     <div className="flex flex-col h-screen">

@@ -21,12 +21,7 @@ export async function findMunicipalityByZipCode(zipCode) {
             return null;
         }
 
-        // Assuming there might be multiple results, process the first match
-        // const municipalityData = querySnapshot.docs[0].data();
-        // const result = {
-        //     name: municipalityData.name,
-        //     filing_info: municipalityData.filing_info,
-        // };
+        // There might be multiple matches, therefore, process all matches.
         const result = querySnapshot.docs.map((doc) => ({
             id: doc.id, // Optional: Include document ID if needed
             name: doc.data().name,
