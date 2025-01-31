@@ -383,7 +383,40 @@ const Map_mode = () => {
       }
     }
 
-  // auto suggestion 
+  // auto suggestion
+  const fetchSuggestions = (query) => {
+    if (!query) return Promise.resolve([]);
+  
+    const searchService = platformRef.current.getSearchService();
+  
+    return new Promise((resolve, reject) => {
+      searchService.autosuggest(
+        {
+          q: query,
+          at: "40.444611,-79.952108", // Example coordinates, adjust as needed
+          limit: 5, // Limit the number of suggestions
+        },
+        (result) => {
+          if (result.items) {
+            const suggestions = result.items
+              .filter((item) => item.position) // Ensure the suggestion has a position
+              .map((item) => ({
+                label: item.title,
+                position: item.position,
+              }));
+            resolve(suggestions);
+          } else {
+            resolve([]);
+          }
+        },
+        (error) => {
+          console.error("Autosuggest failed:", error);
+          reject(error);
+        }
+      );
+    });
+  };
+   
 
   return (
     <div className="flex flex-col h-screen">
@@ -424,6 +457,12 @@ const Map_mode = () => {
         console.log("Search Value:", value);
         handleSearch(value);
       }}
+      onSuggestionsFetch={(query) =>
+        fetchSuggestions(query).then((suggestions) => {
+          console.log("Suggestions:", suggestions);
+          return suggestions;
+        })
+      }
     />
     <button
       className="btn_md mt-5 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
@@ -442,27 +481,24 @@ const Map_mode = () => {
 
   {/* Introduction Card */}
   {showInfoCard && (
-    <div
-      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-3/4 max-w-md p-6 bg-white border border-gray-300 rounded-lg shadow-lg text-center"
-    >
-      <h2 className="text-lg font-semibold text-gray-800">
-        About This Website
-      </h2>
-      <p className="text-sm text-gray-600 mt-2">
-        This website allows users to search for locations, view complaint information, and track status updates for reported issues.
-      </p>
-      <button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        onClick={() => setShowInfoCard(false)}
-      >
-        Close
-      </button>
-    </div>
-  )}
-</div>
-
-
-      
+      <div
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-3/4 max-w-md p-6 bg-white border border-gray-300 rounded-lg shadow-lg text-center"
+          >
+            <h2 className="text-lg font-semibold text-gray-800">
+              About This Website
+            </h2>
+            <p className="text-sm text-gray-600 mt-2">
+              This website allows users to search for locations, view complaint information, and track status updates for reported issues.
+            </p>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              onClick={() => setShowInfoCard(false)}
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
 
       <div id="map_container" className="flex justify-center mt-10">
         {isClient && (
