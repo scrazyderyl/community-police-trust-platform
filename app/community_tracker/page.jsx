@@ -63,7 +63,6 @@ const Community_tracker = () => {
       {/* Page Title */}
       <h1 className="text-3xl font-bold text-center mt-12">
         Misconduct Complaint Record
-        <br />
         From Community
       </h1>
   

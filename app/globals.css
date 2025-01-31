@@ -18,7 +18,3 @@
     @apply inline-flex items-center justify-center align-middle ml-2 bg-blue-500 px-5 py-2 text-white duration-150 hover:bg-blue-600 rounded-md
 }
 
-#map{
-    width: 80%;
-    height: 600px;
-}

@@ -137,14 +137,15 @@ const Map_mode = () => {
                 } else {
                   filingInfo = "No Record Found";
                 }
-                          const locationInfo = `
-                              <div>
-                                <strong>Location Details</strong><br/>
-                                ${location.label || "Address not found"}<br/>
-                                <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
-                                <strong>Filing Information:</strong><br/> ${filingInfo}
-                              </div>
-                            `;
+                const locationInfo = `
+                <div style="width: 300px; max-width: 400px; white-space: normal;">
+                  <strong>Location Details</strong><br/>
+                  ${location.label || "Address not found"}<br/>
+                  <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
+                  <strong>Filing Information:</strong><br/> ${filingInfo}
+                </div>
+              `;
+              
               
                             // Create and show info bubble with location data
                             const newBubble = new H.ui.InfoBubble(userCoords, {
@@ -155,7 +156,7 @@ const Map_mode = () => {
                       } else {
                           
                           const locationInfo = `
-                              <div>
+                              <div style="width: 300px; max-width: 400px; white-space: normal;">
                                 <strong>Location Details</strong><br/>
                                 ${location.label || "Address not found"}<br/>
                                 <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
@@ -222,7 +223,7 @@ const Map_mode = () => {
                   filingInfo = "No Record Found";
                 }
                   const locationInfo = `
-                    <div>
+                    <div style="width: 300px; max-width: 400px; white-space: normal;">
                       <strong>Location Details</strong><br/>
                       ${location.label || "Address not found"}<br/>
                       <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
@@ -242,7 +243,7 @@ const Map_mode = () => {
                 } else {
                     console.log("No municipality found.");
                     const locationInfo = `
-                    <div>
+                    <div style="width: 300px; max-width: 400px; white-space: normal;">
                       <strong>Location Details</strong><br/>
                       ${location.label || "Address not found"}<br/>
                       <strong>ZIP Code:</strong> ${location.postalCode || "N/A"}<br/>
@@ -323,7 +324,7 @@ const Map_mode = () => {
                     filingInfo = "No Record Found";
                   }
                     const divInfo = `
-                        <div>
+                        <div style="width: 300px; max-width: 400px; white-space: normal;">
                           <strong>Location Details</strong><br/>
                           ${locationInfo.label || "Address not found"}<br/>
                           <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}<br/>
@@ -353,7 +354,7 @@ const Map_mode = () => {
             })
             .catch((error) => console.error(error));
             const divInfo = `
-                        <div>
+                        <div style="width: 300px; max-width: 400px; white-space: normal;">
                           <strong>Location Details</strong><br/>
                           ${locationInfo.label || "Address not found"}<br/>
                           <strong>ZIP Code:</strong> ${locationInfo.postalCode || "N/A"}<br/>
@@ -419,7 +420,8 @@ const Map_mode = () => {
    
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen items-center">
+
       {/* Load HERE Maps Scripts */}
       <Script
         src="https://js.api.here.com/v3/3.1/mapsjs-core.js"
@@ -446,7 +448,11 @@ const Map_mode = () => {
         rel="stylesheet"
         href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"
       />
-      
+      <div className="w-3/4 text-center text-black-500 text-lg font-medium leading-relaxed mt-3">
+    This is a technological system aimed at building trust and improving communication 
+    between community members and our law enforcement system in Alleghany County. 
+    Below we provide information on ways to file complaints …
+  </div>
       {/* Full-width Search Bar */}
       <div className="w-full flex justify-center">
   <div className="w-3/4 flex justify-center items-center space-x-4">
@@ -500,35 +506,39 @@ const Map_mode = () => {
         )}
       </div>
 
-      <div id="map_container" className="flex justify-center mt-10">
-        {isClient && (
-          <div
-            ref={mapRef}
-            id="map"
-            style={{
-              width: "85vw",  // Adjust width to fit screen
-              height: "450px", // Set height
-            }}
-          ></div>
-        )}
-        {!isMapReady && (
-        <div
-          className="absolute inset-0 flex items-center justify-center bg-gray-50"
-          style={{
-            zIndex: 10, // Ensure it's above other content
-          }}
-        >
-          <div className="w-3/4 max-w-md p-6 bg-white border border-gray-300 rounded-lg shadow-lg text-center">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Map Not Loaded
-            </h2>
-            <p className="text-sm text-gray-600 mt-2">
-              Please refresh the page to try again.
-            </p>
-          </div>
-        </div>
-      )}
+      <div
+  id="map_container"
+  className="flex justify-center w-full mt-8"
+  style={{ height: "calc(70vh - 80px)" }} // Adjust based on header/search height
+>
+
+  {isClient && (
+    <div
+    ref={mapRef}
+    id="map"
+    className="w-[90vw] h-full rounded-lg shadow-lg"
+  ></div>
+  
+  )}
+  {!isMapReady && (
+    <div
+      className="absolute inset-0 flex items-center justify-center bg-gray-50"
+      style={{
+        zIndex: 10, // Ensure it's above other content
+      }}
+    >
+      <div className="w-3/4 max-w-md p-6 bg-white border border-gray-300 rounded-lg shadow-lg text-center">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Map Not Loaded
+        </h2>
+        <p className="text-sm text-gray-600 mt-2">
+          Please refresh the page to try again.
+        </p>
       </div>
+    </div>
+  )}
+</div>
+
     </div>
   );
 };
