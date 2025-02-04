@@ -65,11 +65,20 @@ const Community_tracker = () => {
         Misconduct Complaint Record
         From Community
       </h1>
-  
+      {/* Informational Text */}
+<p className="w-3/4 text-center text-black-500 text-sm mt-4 leading-relaxed">
+  This page contains community-reported cases when they filed a police complaint in Allegheny County.
+  The data will not be complete since not all community members use this site. We show only the counts,
+  and nothing personal is collected or shown here. We also show data from the last one year.
+</p>
+
       {/* Add Record Button and Help Icon */}
       <div className="flex items-center justify-center mt-6 space-x-4">
         <a href="/create_record" className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
           + Add Record
+        </a>
+        <a href="/update_record/update_portal" className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
+          Update Record
         </a>
       </div>
   

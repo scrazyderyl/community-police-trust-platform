@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { addRecord } from "@/services/FirestoreService";
 import { ComplaintRecord } from "@/models/ComplaintRecord";
 
@@ -9,33 +10,51 @@ const Create_record = () => {
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("");
   const [safeword, setSafeword] = useState("");
+  const [issue, setIssue] = useState("");
+  const router = useRouter();
 
   // Handle form submission
   const handleAddRecord = async (e) => {
-    e.preventDefault(); // Prevent form from refreshing the page
-
-    // Create a new record using ComplaintRecord
+    e.preventDefault(); // Prevent page reload
+  
+    // Create record object
     const record = {
-      ...ComplaintRecord,
-      date: date,
-      location: location,
-      status: status,
-      safeword: safeword,
+      date,
+      location,
+      status,
+      issue,
+      safeword,
     };
-
-    // Add the record to Firestore
+  
     try {
-      await addRecord(record);
-      alert("Record added successfully!");
+      const response = await fetch("/api/create_record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(record),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to add record");
+      }
+  
+      alert(`Record added successfully! Your receipt: ${data.receiptString}. Please keep it safely, you will need it when updating the record.`);
+  
+      // Clear form fields
       setDate("");
       setLocation("");
       setStatus("");
       setSafeword("");
+      setIssue("");
+
+      
     } catch (error) {
-      console.error("Error adding record:", error);
-      alert("Failed to add record.");
+      console.error("Error:", error);
+      alert(error.message);
     }
   };
+  
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -86,6 +105,19 @@ const Create_record = () => {
             </select>
           </div>
 
+          {/* issue field */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-1">Issue</label>
+            <input
+              type="text"
+              placeholder="Enter Complaint Issue"
+              className="w-full px-3 py-2 border rounded-md focus:outline-blue-500"
+              value={issue}
+              onChange={(e) => setIssue(e.target.value)}
+              required
+            />
+          </div>
+
           {/* Safe Word Field */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-1">Safe Word</label>
@@ -101,9 +133,10 @@ const Create_record = () => {
 
           {/* Buttons */}
           <div className="flex justify-between">
-            <button
+          <button
               type="button"
               className="bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500"
+              onClick={() => router.back()} // Navigate back
             >
               Cancel
             </button>

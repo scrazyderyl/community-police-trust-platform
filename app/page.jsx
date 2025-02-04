@@ -448,7 +448,7 @@ const Map_mode = () => {
         rel="stylesheet"
         href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"
       />
-      <div className="w-3/4 text-center text-black-500 text-lg font-medium leading-relaxed mt-3">
+      <div className="w-3/4 text-center text-black-500 text-sm leading-relaxed mt-3">
     This is a technological system aimed at building trust and improving communication 
     between community members and our law enforcement system in Alleghany County. 
     Below we provide information on ways to file complaints …

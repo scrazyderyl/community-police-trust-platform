@@ -4,6 +4,7 @@ export const ComplaintRecord = {
     location: "",
     status: "",
     createdAt: new Date(),
+    issue: "",
     safeword: "safeword"
   };
   
