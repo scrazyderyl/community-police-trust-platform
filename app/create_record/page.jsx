@@ -10,13 +10,20 @@ const Create_record = () => {
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("");
   const [safeword, setSafeword] = useState("");
+  const [confirm_sw, setConfirm_sw] = useState("");
   const [issue, setIssue] = useState("");
+  const [error, setError] = useState(false);
   const router = useRouter();
 
   // Handle form submission
   const handleAddRecord = async (e) => {
     e.preventDefault(); // Prevent page reload
-  
+
+    if (safeword != confirm_sw) {
+      alert("Safe words do not match. Please confirm again.");
+      return;
+    }
+
     // Create record object
     const record = {
       date,
@@ -25,36 +32,36 @@ const Create_record = () => {
       issue,
       safeword,
     };
-  
+
     try {
       const response = await fetch("/api/create_record", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(record),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to add record");
       }
-  
-      alert(`Record added successfully! Your receipt: ${data.receiptString}. Please keep it safely, you will need it when updating the record.`);
-  
+
+      alert(
+        `Record added successfully! Your receipt: ${data.receiptString}. Please keep it safely, you will need it when updating the record.`
+      );
+
       // Clear form fields
       setDate("");
       setLocation("");
       setStatus("");
       setSafeword("");
       setIssue("");
-
-      
+      setConfirm_sw("");
     } catch (error) {
       console.error("Error:", error);
       alert(error.message);
     }
   };
-  
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -119,7 +126,7 @@ const Create_record = () => {
           </div>
 
           {/* Safe Word Field */}
-          <div className="mb-6">
+          <div className="mb-2">
             <label className="block text-sm font-medium mb-1">Safe Word</label>
             <input
               type="text"
@@ -130,10 +137,28 @@ const Create_record = () => {
               required
             />
           </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-1">
+              Confirm Your Safe Word
+            </label>
+            <input
+              type="text"
+              placeholder="Enter safe word again"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-blue-500 ${
+                confirm_sw && safeword !== confirm_sw ? "border-red-500" : ""
+              }`}
+              value={confirm_sw}
+              onChange={(e) => {
+                setConfirm_sw(e.target.value);
+                setError(safeword !== e.target.value);
+              }}
+              required
+            />
+          </div>
 
           {/* Buttons */}
           <div className="flex justify-between">
-          <button
+            <button
               type="button"
               className="bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500"
               onClick={() => router.back()} // Navigate back

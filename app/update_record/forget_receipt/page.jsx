@@ -1,23 +1,22 @@
 "use client";
-import React from "react";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // Import router
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
-const update_protal = () => {
-  const [receiptString, setReceiptString] = useState("");
+const page = () => {
   const router = useRouter();
+  const [safeword, setSafeword] = useState("");
 
   const handleFindRecord = async () => {
-    if (!receiptString.trim()) {
-      alert("Please enter a receipt string");
+    if (!safeword.trim()) {
+      alert("Please enter your safeword");
       return;
     }
 
     try {
-      const response = await fetch("/api/find_by_receipt", {
+      const response = await fetch("/api/find_by_safeword", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiptString }),
+        body: JSON.stringify({ safeword }),
       });
 
       const data = await response.json();
@@ -35,15 +34,15 @@ const update_protal = () => {
   return (
     <div className="flex justify-center bg-gray-100 min-h-screen">
       <div className="bg-white p-4 rounded-md shadow-md w-5/6 md:w-4/6 mt-10 max-h-[150px] flex flex-col justify-center">
-        <h2 className="text-lg font-bold mb-2">Update Your Record</h2>
+        <h2 className="text-lg font-bold mb-2">Update By Record Safeword</h2>
 
         {/* Input Field */}
         <input
           type="text"
-          placeholder="Enter Receipt String"
+          placeholder="Enter Your Safeword"
           className="w-full px-2 py-1 border rounded-md focus:outline-blue-500"
-          value={receiptString}
-          onChange={(e) => setReceiptString(e.target.value)}
+          value={safeword}
+          onChange={(e) => setSafeword(e.target.value)}
         />
 
         {/* Buttons */}
@@ -53,12 +52,6 @@ const update_protal = () => {
             onClick={() => router.back()}
           >
             Back
-          </button>
-          <button
-            className="bg-gray-400 text-white px-2 py-1 mr-4 rounded-md text-md hover:bg-gray-500"
-            onClick={() => router.push("/update_record/forget_receipt")}
-          >
-            Forgot Receipt String
           </button>
           <button
             className="bg-blue-500 text-white px-2 py-1 rounded-md text-md hover:bg-blue-600"
@@ -72,4 +65,4 @@ const update_protal = () => {
   );
 };
 
-export default update_protal;
+export default page;
