@@ -1,26 +1,32 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { addRecord } from "@/services/FirestoreService";
-import { ComplaintRecord } from "@/models/ComplaintRecord";
 
 const Create_record = () => {
   // State variables for form fields
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState("");
-  const [safeword, setSafeword] = useState("");
-  const [confirm_sw, setConfirm_sw] = useState("");
+  const [email, setEmail] = useState("");
   const [issue, setIssue] = useState("");
-  const [error, setError] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(true); // Track email validity
+  const [receiptString, setReceiptString] = useState(null); // Store receipt
   const router = useRouter();
+
+  // Function to validate email format
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   // Handle form submission
   const handleAddRecord = async (e) => {
     e.preventDefault(); // Prevent page reload
 
-    if (safeword != confirm_sw) {
-      alert("Safe words do not match. Please confirm again.");
+    // Validate email before submitting
+    if (!validateEmail(email)) {
+      setIsEmailValid(false);
+      alert("Please enter a valid email address.");
       return;
     }
 
@@ -30,7 +36,7 @@ const Create_record = () => {
       location,
       status,
       issue,
-      safeword,
+      email,
     };
 
     try {
@@ -46,17 +52,15 @@ const Create_record = () => {
         throw new Error(data.error || "Failed to add record");
       }
 
-      alert(
-        `Record added successfully! Your receipt: ${data.receiptString}. Please keep it safely, you will need it when updating the record.`
-      );
+      // Store the receipt string and show the popup
+      setReceiptString(data.receiptString);
 
       // Clear form fields
       setDate("");
       setLocation("");
       setStatus("");
-      setSafeword("");
+      setEmail("");
       setIssue("");
-      setConfirm_sw("");
     } catch (error) {
       console.error("Error:", error);
       alert(error.message);
@@ -125,35 +129,25 @@ const Create_record = () => {
             />
           </div>
 
-          {/* Safe Word Field */}
+          {/* Email Field */}
           <div className="mb-2">
-            <label className="block text-sm font-medium mb-1">Safe Word</label>
+            <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="text"
-              placeholder="Enter safe word"
-              className="w-full px-3 py-2 border rounded-md focus:outline-blue-500"
-              value={safeword}
-              onChange={(e) => setSafeword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-1">
-              Confirm Your Safe Word
-            </label>
-            <input
-              type="text"
-              placeholder="Enter safe word again"
+              placeholder="Enter your email address"
               className={`w-full px-3 py-2 border rounded-md focus:outline-blue-500 ${
-                confirm_sw && safeword !== confirm_sw ? "border-red-500" : ""
+                isEmailValid ? "border-gray-300" : "border-red-500"
               }`}
-              value={confirm_sw}
+              value={email}
               onChange={(e) => {
-                setConfirm_sw(e.target.value);
-                setError(safeword !== e.target.value);
+                setEmail(e.target.value);
+                setIsEmailValid(validateEmail(e.target.value)); // Validate email on change
               }}
               required
             />
+            {!isEmailValid && (
+              <p className="text-red-500 text-xs mt-1">Invalid email format</p>
+            )}
           </div>
 
           {/* Buttons */}
@@ -174,6 +168,30 @@ const Create_record = () => {
           </div>
         </form>
       </div>
+      {/* Receipt Popup */}
+      {receiptString && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-md shadow-lg w-[350px] text-center">
+            <h3 className="text-lg font-semibold mb-4">
+              Record Created Successfully!
+            </h3>
+            <p>Your receipt string:</p>
+            <p className="text-blue-600 font-bold text-lg mt-2">
+              {receiptString}
+            </p>
+            <p className="text-sm text-gray-500 mt-4">
+              The receipt string has been sent to your email. If you don’t find
+              it in your inbox, please check your spam/junk folder.
+            </p>
+            <button
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              onClick={() => setReceiptString(null)} // Close popup
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

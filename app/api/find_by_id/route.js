@@ -9,7 +9,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "Record ID is required" }), { status: 400 });
     }
 
-    const recordRef = doc(db, "record", id);
+    const recordRef = doc(db, "records", id);
     const recordSnap = await getDoc(recordRef);
 
     if (!recordSnap.exists()) {

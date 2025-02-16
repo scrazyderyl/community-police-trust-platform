@@ -1,6 +1,8 @@
 import { db } from "@/firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
+/* {This endpoint has been archived.}
+
 export async function POST(req) {
   try {
     const { safeword } = await req.json();
@@ -11,7 +13,7 @@ export async function POST(req) {
     }
 
     // Query Firestore for the record with the given receipt string
-    const recordsRef = collection(db, "record");
+    const recordsRef = collection(db, "records");
     const q = query(recordsRef, where("safeword", "==", safeword));
     const querySnapshot = await getDocs(q);
 
@@ -31,3 +33,4 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
   }
 }
+*/

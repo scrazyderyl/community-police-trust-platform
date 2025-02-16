@@ -55,12 +55,6 @@ const update_protal = () => {
             Back
           </button>
           <button
-            className="bg-gray-400 text-white px-2 py-1 mr-4 rounded-md text-md hover:bg-gray-500"
-            onClick={() => router.push("/update_record/forget_receipt")}
-          >
-            Forgot Receipt String
-          </button>
-          <button
             className="bg-blue-500 text-white px-2 py-1 rounded-md text-md hover:bg-blue-600"
             onClick={handleFindRecord}
           >

@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 
 // COLLECTION NAME (e.g., "users")
-const COLLECTION_NAME = "record";
+const COLLECTION_NAME = "records";
 
 // CREATE: Add a Document
 export const addRecord = async (recordData) => {

@@ -9,7 +9,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "All fields are required" }), { status: 400 });
     }
 
-    const recordRef = doc(db, "record", id);
+    const recordRef = doc(db, "records", id);
 
     await updateDoc(recordRef, {
       date,

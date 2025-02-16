@@ -19,7 +19,7 @@ const UpdateRecordPage = () => {
   useEffect(() => {
     const fetchRecord = async () => {
       try {
-        const response = await fetch(`/api/get_record_by_id`, {
+        const response = await fetch(`/api/find_by_id`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id }),

@@ -5,6 +5,6 @@ export const ComplaintRecord = {
     status: "",
     createdAt: new Date(),
     issue: "",
-    safeword: "safeword"
+    email: ""
   };
   

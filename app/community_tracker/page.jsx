@@ -6,15 +6,8 @@ import {
   getRecords,
   deleteRecord,
 } from "@/services/FirestoreService";
-import { ComplaintRecord } from "@/models/ComplaintRecord";
 
 const Community_tracker = () => {
-  const [records, setRecords] = useState([]);
-  const [newRecord, setNewRecord] = useState({
-    date: "",
-    location: "",
-    status: "",
-  });
   const [summary, setSummary] = useState({});
 
   useEffect(() => {
@@ -23,7 +16,6 @@ const Community_tracker = () => {
 
   const fetchRecords = async () => {
     const recordsData = await getRecords();
-    setRecords(recordsData);
     summarizeRecords(recordsData);
   };
 
@@ -54,17 +46,6 @@ const Community_tracker = () => {
     });
 
     setSummary(summaryObj);
-  };
-
-  // add a record. Will be moved to add record page later
-  const handleAddRecord = async () => {
-    const record = {
-      ...ComplaintRecord,
-      date: "2025-01-07",
-      location: "Pittsburgh",
-      status: "Filed",
-    };
-    await addRecord(record);
   };
 
   return (

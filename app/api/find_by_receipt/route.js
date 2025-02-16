@@ -3,14 +3,15 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 
 export async function POST(req) {
   try {
+    
     const { receiptString } = await req.json();
-
+    console.log(receiptString);
     if (!receiptString) {
       return new Response(JSON.stringify({ error: "Receipt string is required" }), { status: 400 });
     }
 
     // Query Firestore for the record with the given receipt string
-    const recordsRef = collection(db, "record");
+    const recordsRef = collection(db, "records");
     const q = query(recordsRef, where("receiptString", "==", receiptString));
     const querySnapshot = await getDocs(q);
 
@@ -23,6 +24,7 @@ export async function POST(req) {
     querySnapshot.forEach((doc) => {
       record = { id: doc.id, ...doc.data() };
     });
+    console.log(record);
 
     return new Response(JSON.stringify({ message: "Record found", record }), { status: 200 });
   } catch (error) {
