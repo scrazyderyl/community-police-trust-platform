@@ -2,7 +2,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import Search_bar from "@/components/Search_bar";
-import { findMunicipalityByZipCode } from "@/services/GeoService";
+import {
+  findMunicipalityByZipCode,
+  findMunicipalityByAddress,
+} from "@/services/GeoService";
 
 const Map_mode = () => {
   const mapRef = useRef(null);
@@ -18,6 +21,7 @@ const Map_mode = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [showInfoCard, setShowInfoCard] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [muni, setMuni] = useState("");
 
   const [bubble, setBubble] = useState(null);
 
@@ -120,7 +124,7 @@ const Map_mode = () => {
             (result) => {
               if (result.items.length > 0) {
                 const location = result.items[0].address;
-                findMunicipalityByZipCode("15213-3107")
+                findMunicipalityByAddress(location.city)
                   .then((results) => {
                     if (results) {
                       let filingInfo = "";
@@ -143,6 +147,7 @@ const Map_mode = () => {
                   <strong>ZIP Code:</strong> ${
                     location.postalCode || "N/A"
                   }<br/>
+                  <div style="margin-top: 8px"><strong>Nearby Municialities:</strong></div>
                   <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
                       ${filingInfo}
                   </div>
@@ -209,7 +214,9 @@ const Map_mode = () => {
       (result) => {
         if (result.items.length > 0) {
           const location = result.items[0].address;
-          findMunicipalityByZipCode(location.postalCode)
+          console.log(location.city);
+
+          findMunicipalityByAddress(location.city)
             .then((results) => {
               if (results) {
                 let filingInfo = "";
@@ -232,12 +239,12 @@ const Map_mode = () => {
                       <strong>ZIP Code:</strong> ${
                         location.postalCode || "N/A"
                       }<br/>
-                      <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+                      <div style="margin-top: 8px"><strong>Nearby Municialities:</strong></div>
+                      <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 1px;">
                         ${filingInfo}
                       </div> 
                     </div>
                   `;
-
                 const bubbles = uiRef.current.getBubbles();
                 bubbles.forEach((b) => uiRef.current.removeBubble(b));
 
@@ -318,7 +325,7 @@ const Map_mode = () => {
             alert(error);
           } else {
             const pos = location;
-            findMunicipalityByZipCode(locationInfo.postalCode)
+            findMunicipalityByAddress(locationInfo.city)
               .then((results) => {
                 if (results) {
                   let filingInfo = "";
@@ -341,6 +348,7 @@ const Map_mode = () => {
                           <strong>ZIP Code:</strong> ${
                             locationInfo.postalCode || "N/A"
                           }<br/>
+                          <div style="margin-top: 8px"><strong>Nearby Municialities:</strong></div>
                           <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
     ${filingInfo}
   </div>
@@ -434,6 +442,31 @@ const Map_mode = () => {
       );
     });
   };
+
+  // get municipality currently not using
+  async function getMunicipality(address) {
+    const apiKey = process.env.NEXT_PUBLIC_HERE_MAPS_API_KEY;
+    const url = `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
+      address
+    )}&apiKey=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.items.length > 0) {
+        const municipality = data.items[0].address.city; // Extract municipality
+        console.log("Municipality:", municipality);
+        setMuni(municipality);
+        return municipality;
+      } else {
+        console.log("No results found.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching municipality:", error);
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen items-center">
