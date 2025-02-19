@@ -137,13 +137,15 @@ const Map_mode = () => {
                         filingInfo = "No Record Found";
                       }
                       const locationInfo = `
-                <div style="width: 300px; max-width: 400px; white-space: normal;">
+                <div style="width: 250px; max-width: 400px; white-space: normal;">
                   <strong>Location Details</strong><br/>
                   ${location.label || "Address not found"}<br/>
                   <strong>ZIP Code:</strong> ${
                     location.postalCode || "N/A"
                   }<br/>
-                  <strong>Filing Information:</strong><br/> ${filingInfo}
+                  <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+                      ${filingInfo}
+                  </div>
                 </div>
               `;
 
@@ -155,7 +157,7 @@ const Map_mode = () => {
                       uiRef.current.addBubble(newBubble);
                     } else {
                       const locationInfo = `
-                              <div style="width: 300px; max-width: 400px; white-space: normal;">
+                              <div style="width: 250px; max-width: 400px; white-space: normal;">
                                 <strong>Location Details</strong><br/>
                                 ${location.label || "Address not found"}<br/>
                                 <strong>ZIP Code:</strong> ${
@@ -224,13 +226,15 @@ const Map_mode = () => {
                   filingInfo = "No Record Found";
                 }
                 const locationInfo = `
-                    <div style="width: 300px; max-width: 400px; white-space: normal;">
+                    <div style="width: 250px; max-width: 400px; white-space: normal;">
                       <strong>Location Details</strong><br/>
                       ${location.label || "Address not found"}<br/>
                       <strong>ZIP Code:</strong> ${
                         location.postalCode || "N/A"
                       }<br/>
-                      <strong>Filing Information:</strong><br/> ${filingInfo} 
+                      <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+                        ${filingInfo}
+                      </div> 
                     </div>
                   `;
 
@@ -246,7 +250,7 @@ const Map_mode = () => {
               } else {
                 console.log("No municipality found.");
                 const locationInfo = `
-                    <div style="width: 300px; max-width: 400px; white-space: normal;">
+                    <div style="width: 250px; max-width: 400px; white-space: normal;">
                       <strong>Location Details</strong><br/>
                       ${location.label || "Address not found"}<br/>
                       <strong>ZIP Code:</strong> ${
@@ -331,13 +335,15 @@ const Map_mode = () => {
                     filingInfo = "No Record Found";
                   }
                   const divInfo = `
-                        <div style="width: 300px; max-width: 400px; white-space: normal;">
+                        <div style="width: 250px; max-width: 400px; white-space: normal;">
                           <strong>Location Details</strong><br/>
                           ${locationInfo.label || "Address not found"}<br/>
                           <strong>ZIP Code:</strong> ${
                             locationInfo.postalCode || "N/A"
                           }<br/>
-                          <strong>Filing Information:</strong><br/> ${filingInfo}
+                          <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+    ${filingInfo}
+  </div>
                         </div>
                       `;
                   console.log(pos);
@@ -362,7 +368,7 @@ const Map_mode = () => {
               })
               .catch((error) => console.error(error));
             const divInfo = `
-                        <div style="width: 300px; max-width: 400px; white-space: normal;">
+                        <div style="width: 250px; max-width: 400px; white-space: normal;">
                           <strong>Location Details</strong><br/>
                           ${locationInfo.label || "Address not found"}<br/>
                           <strong>ZIP Code:</strong> ${

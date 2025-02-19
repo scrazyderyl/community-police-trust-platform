@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { municipalities } from "@/public/municipalities";
 
 const Create_record = () => {
   // State variables for form fields
@@ -95,8 +96,11 @@ const Create_record = () => {
               required
             >
               <option value="">Select Location</option>
-              <option value="Pittsburgh">Pittsburgh</option>
-              <option value="Other Locations">Other Locations</option>
+              {municipalities.map((municipality, index) => (
+                <option key={index} value={municipality}>
+                  {municipality}
+                </option>
+              ))}
             </select>
           </div>
 

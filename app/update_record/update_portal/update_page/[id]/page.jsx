@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { municipalities } from "@/public/municipalities";
 
 const UpdateRecordPage = () => {
   const { id } = useParams(); // Get record ID from URL
@@ -96,13 +97,16 @@ const UpdateRecordPage = () => {
           </label>
           <select
             className="w-full px-3 py-2 border rounded-md focus:outline-blue-500"
-            value={record.location}
-            onChange={(e) => setRecord({ ...record, location: e.target.value })}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
             required
           >
             <option value="">Select Location</option>
-            <option value="Pittsburgh">Pittsburgh</option>
-            <option value="Other Locations">Other Locations</option>
+            {municipalities.map((municipality, index) => (
+              <option key={index} value={municipality}>
+                {municipality}
+              </option>
+            ))}
           </select>
 
           <label className="block text-sm font-medium mt-4 mb-1">Status</label>
