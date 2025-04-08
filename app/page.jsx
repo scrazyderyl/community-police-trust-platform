@@ -325,82 +325,76 @@ const Map_mode = () => {
             alert(error);
           } else {
             const pos = location;
-            findMunicipalityByAddress(locationInfo.city)
-              .then((results) => {
-                if (results) {
-                  let filingInfo = "";
 
-                  if (results && results.length > 0) {
-                    // Generate filing information for each result
-                    filingInfo = results
-                      .map(
-                        (result) =>
-                          `<strong>${result.name}:</strong> ${result.filing_info}`
-                      )
-                      .join("<br/>");
-                  } else {
-                    filingInfo = "No Record Found";
+            const graphqlQuery = {
+              query: `
+                query ($address: String!) {
+                  findMunicipalityByAddress(address: $address) {
+                    id
+                    name
+                    filing_info
                   }
-                  const divInfo = `
-                        <div style="width: 250px; max-width: 400px; white-space: normal;">
-                          <strong>Location Details</strong><br/>
-                          ${locationInfo.label || "Address not found"}<br/>
-                          <strong>ZIP Code:</strong> ${
-                            locationInfo.postalCode || "N/A"
-                          }<br/>
-                          <div style="margin-top: 8px"><strong>Nearby Municialities:</strong></div>
-                          <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
-    ${filingInfo}
-  </div>
-                        </div>
-                      `;
-                  console.log(pos);
-                  const userCoords = {
-                    lat: pos.lat,
-                    lng: pos.lng,
-                  };
-                  mapInstance.current.setCenter(pos);
-                  // Remove all existing bubbles
-                  const bubbles = uiRef.current.getBubbles();
-                  bubbles.forEach((b) => uiRef.current.removeBubble(b));
-
-                  // Create and add a new bubble
-                  const newBubble = new H.ui.InfoBubble(userCoords, {
-                    content: divInfo,
-                  });
-                  setBubble(newBubble);
-                  uiRef.current.addBubble(newBubble);
-                } else {
-                  console.log("No municipality found.");
                 }
-              })
-              .catch((error) => console.error(error));
-            const divInfo = `
-                        <div style="width: 250px; max-width: 400px; white-space: normal;">
-                          <strong>Location Details</strong><br/>
-                          ${locationInfo.label || "Address not found"}<br/>
-                          <strong>ZIP Code:</strong> ${
-                            locationInfo.postalCode || "N/A"
-                          }<br/>
-                          <strong>Filing Information:</strong> No Record Found
-                        </div>
-                      `;
-            console.log(pos);
-            const userCoords = {
-              lat: pos.lat,
-              lng: pos.lng,
+              `,
+              variables: {
+                address: locationInfo.city,
+              },
             };
-            mapInstance.current.setCenter(pos);
-            // Remove all existing bubbles
-            const bubbles = uiRef.current.getBubbles();
-            bubbles.forEach((b) => uiRef.current.removeBubble(b));
 
-            // Create and add a new bubble
-            const newBubble = new H.ui.InfoBubble(userCoords, {
-              content: divInfo,
-            });
-            setBubble(newBubble);
-            uiRef.current.addBubble(newBubble);
+            fetch("/api/graphql", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(graphqlQuery),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                const results = data.data.findMunicipalityByAddress;
+
+                let filingInfo = "No Record Found";
+
+                if (results && results.length > 0) {
+                  filingInfo = results
+                    .map(
+                      (result) =>
+                        `<strong>${result.name}:</strong> ${result.filing_info}`
+                    )
+                    .join("<br/>");
+                }
+
+                const divInfo = `
+                  <div style="width: 250px; max-width: 400px; white-space: normal;">
+                    <strong>Location Details</strong><br/>
+                    ${locationInfo.label || "Address not found"}<br/>
+                    <strong>ZIP Code:</strong> ${
+                      locationInfo.postalCode || "N/A"
+                    }<br/>
+                    <div style="margin-top: 8px"><strong>Nearby Municipalities:</strong></div>
+                    <div style="max-height: 100px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; margin-top: 5px;">
+                      ${filingInfo}
+                    </div>
+                  </div>
+                `;
+
+                const userCoords = {
+                  lat: pos.lat,
+                  lng: pos.lng,
+                };
+
+                mapInstance.current.setCenter(pos);
+
+                // Remove existing bubbles
+                const bubbles = uiRef.current.getBubbles();
+                bubbles.forEach((b) => uiRef.current.removeBubble(b));
+
+                // Create and show new info bubble
+                const newBubble = new H.ui.InfoBubble(userCoords, {
+                  content: divInfo,
+                });
+
+                setBubble(newBubble);
+                uiRef.current.addBubble(newBubble);
+              })
+              .catch((error) => console.error("GraphQL Error:", error));
           }
         }
       );
