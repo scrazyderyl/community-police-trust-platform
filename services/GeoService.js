@@ -1,11 +1,9 @@
-<<<<<<< HEAD
 
-=======
 /**
  * GeoService.js
  * Service for geographic and municipality-related operations
  */
->>>>>>> restructure
+
 import { db } from "@/firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
