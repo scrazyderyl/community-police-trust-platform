@@ -1,32 +1,79 @@
-"use client"
-import React, { useState } from 'react'
+"use client";
+import React, { useState, useRef, useEffect } from "react";
 
-const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
-  const [input, setInput] = useState('') // Manage input state
-  const [suggestions, setSuggestions] = useState([]) // Manage suggestions state
+const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
+  const [input, setInput] = useState(""); // Manage input state
+  const [suggestions, setSuggestions] = useState([]); // Manage suggestions state
+  const [loading, setLoading] = useState(false);
+
+  const searchInputRef = useRef(null);
+  const suggestionsRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
+
+  // Handle clicks outside of suggestions dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target) &&
+        !searchInputRef.current?.contains(event.target)
+      ) {
+        setSuggestions([]); // Hide suggestions
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle form submission
   const handleSearch = (e) => {
     e.preventDefault(); // Prevent default form submission behavior
-    if (onSearch) {
+    if (onSearch && input.trim()) {
       onSearch(input); // Pass the input value to the parent function
     }
     setSuggestions([]); // Clear suggestions after search
-  }
+  };
 
-  // Handle input change
+  // Handle input change with debounce
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInput(value); // Update input value
-    if (onSuggestionsFetch && value.trim()) {
-      onSuggestionsFetch(value)
-        .then((fetchedSuggestions) => {
+
+    // Clear any existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    if (!value.trim() || value.trim().length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (onSuggestionsFetch) {
+      setLoading(true);
+
+      // Debounce suggestions fetch (300ms)
+      debounceTimeoutRef.current = setTimeout(async () => {
+        try {
+          const fetchedSuggestions = await onSuggestionsFetch(value);
           console.log("Fetched Suggestions:", fetchedSuggestions);
           setSuggestions(fetchedSuggestions); // Update suggestions state
-        })
-        .catch((err) => console.error("Failed to fetch suggestions:", err));
-    } else {
-      setSuggestions([]); // Clear suggestions if input is empty
+        } catch (err) {
+          console.error("Failed to fetch suggestions:", err);
+        } finally {
+          setLoading(false);
+        }
+      }, 300);
     }
   };
 
@@ -40,24 +87,34 @@ const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
   };
 
   return (
-    <div className="relative flex items-center justify-center mt-5">
+    <div className="relative flex items-center justify-center mt-5 w-full">
       <form
         onSubmit={handleSearch}
         className="flex relative w-full max-w-3xl overflow-hidden rounded-md shadow-md"
       >
         {/* Input Field */}
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search Location"
           className="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={input} // Bind input value
           onChange={handleInputChange} // Update state on input
+          aria-label="Search address"
         />
+
+        {/* Loading Indicator */}
+        {loading && (
+          <div className="absolute top-1/2 right-12 transform -translate-y-1/2">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
 
         {/* Submit Button */}
         <button
           type="submit"
           className="px-4 bg-blue-500 text-white rounded-r-md hover:bg-blue-600"
+          aria-label="Search"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +135,10 @@ const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
 
       {/* Suggestions Dropdown */}
       {suggestions.length > 0 && (
-        <ul className="absolute top-full left-0 w-full max-w-3xl bg-white border border-gray-300 rounded-md shadow-md mt-2 z-10">
+        <ul
+          ref={suggestionsRef}
+          className="absolute top-full left-0 w-full max-w-3xl bg-white border border-gray-300 rounded-md shadow-md mt-2 z-10"
+        >
           {suggestions.map((suggestion, index) => (
             <li
               key={index}
@@ -90,10 +150,21 @@ const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
           ))}
         </ul>
       )}
+
+      {/* Map button - maintaining compatibility with your original component */}
+      {show_map_btn && (
+        <button
+          type="button"
+          className="ml-2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          onClick={() => {
+            window.location.href = "/map";
+          }}
+        >
+          Map View
+        </button>
+      )}
     </div>
   );
-}
+};
 
-export default Search_bar
-
-
+export default Search_bar;
