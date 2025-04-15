@@ -1,9 +1,10 @@
-"use client"
-import React, { useState } from 'react'
+// Search_bar.jsx
+"use client";
+import React, { useState } from "react";
 
 const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
-  const [input, setInput] = useState('') // Manage input state
-  const [suggestions, setSuggestions] = useState([]) // Manage suggestions state
+  const [input, setInput] = useState(""); // Manage input state
+  const [suggestions, setSuggestions] = useState([]); // Manage suggestions state
 
   // Handle form submission
   const handleSearch = (e) => {
@@ -12,7 +13,7 @@ const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
       onSearch(input); // Pass the input value to the parent function
     }
     setSuggestions([]); // Clear suggestions after search
-  }
+  };
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -92,8 +93,6 @@ const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
       )}
     </div>
   );
-}
+};
 
-export default Search_bar
-
-
+export default Search_bar;

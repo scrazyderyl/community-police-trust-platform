@@ -1,3 +1,4 @@
+// page.jsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Script from "next/script";
