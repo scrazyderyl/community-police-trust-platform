@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-// Search_bar.jsx
-"use client";
-import React, { useState } from "react";
-
-const Search_bar = ({ show_map_btn, onSearch, onSuggestionsFetch }) => {
-  const [input, setInput] = useState(""); // Manage input state
-  const [suggestions, setSuggestions] = useState([]); // Manage suggestions state
-=======
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 
@@ -43,7 +34,6 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
       }
     };
   }, []);
->>>>>>> restructure
 
   // Handle form submission
   const handleSearch = (e) => {
