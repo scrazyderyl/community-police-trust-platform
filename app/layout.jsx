@@ -3,7 +3,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 
 export const metadata = {
-  title: "Misconduct Complain App",
+  title: "Misconduct Complaint App",
   description:
     "Get Information You Need When Facing Law Enforcement Misconduct.",
 };

@@ -67,6 +67,11 @@ const Nav = () => {
                   Community Tracker
                 </a>
               </li>
+              <li>
+                <a href="/editor" className="nav_button">
+                  Contribute Filing Information
+                </a>
+              </li>
             </ul>
           </div>
 
