@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import AsyncSelect from "react-select/async";
 
-export default function JurisdictionSelector({ initialValue, onSelect }) {
+export default function JurisdictionSelector({ value, onChange, onBlur }) {
   const loadOptions = useCallback(
     async (inputValue, callback) => {
       if (!inputValue) {
@@ -32,25 +32,23 @@ export default function JurisdictionSelector({ initialValue, onSelect }) {
     <AsyncSelect
       cacheOptions
       loadOptions={loadOptions}
-      defaultValue={initialValue}
+      value={value}
       placeholder="Search for a jurisdiction"
-      onChange={onSelect}
+      onChange={onChange}
+      onBlur={onBlur}
       styles={{
+        container: (base) => ({
+          ...base,
+          width: "100%",
+        }),
         control: (base) => ({
           ...base,
           borderRadius: "10px",
           paddingLeft: "0.5rem",
           paddingRight: "0.5rem",
-          minHeight: "3.5rem",
+          paddingTop: "0.25rem",
+          paddingBottom: "0.25rem",
           fontSize: "1.125rem",
-          boxShadow: "0 2px 8px 0 rgba(0,0,0,0.04)",
-          borderColor: "#d1d5db",
-          backgroundColor: "white",
-        }),
-        menu: (base) => ({
-          ...base,
-          borderRadius: "1rem",
-          boxShadow: "0 8px 24px 0 rgba(0,0,0,0.08)",
         }),
       }}
       noOptionsMessage={() => "No results found."}

@@ -1,11 +1,16 @@
 'use client';
 import { useRouter } from "next/navigation";
-import JurisdictionSelector from "@/components/jurisdiction_info_editor/JurisdictionSelector";
+import dynamic from "next/dynamic";
+
+const JurisdictionSelector = dynamic(
+  () => import("@/components/jurisdiction_info_editor/JurisdictionSelector"),
+  { ssr: false }
+);
 
 export default function JurisdictionSearch() {
   const router = useRouter();
 
-  const handleChange = (option) => {
+  const navigate = (option) => {
     if (option && option.value) {
       router.push(`/editor/${option.value}`);
     }
@@ -18,7 +23,7 @@ export default function JurisdictionSearch() {
           Update filing information for your jurisdiction
         </div>
         <JurisdictionSelector
-          onSelect={handleChange}
+          onChange={navigate}
         />
       </div>
     </div>

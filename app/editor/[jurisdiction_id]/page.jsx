@@ -204,33 +204,50 @@ export default function JurisdictionInfoForm() {
                     Jurisdiction Deferment
                   </div>
                   <div className="flex items-center gap-4 max-w-100">
-                    <div className="flex-1 min-w-0">
-                      <JurisdictionSelector
-                        initialValue={info.defer}
-                        onSelect={(option) => {
-                          setFieldValue("defer", option ? option : "");
+                    {(() => {
+                      // Change defer
+                      const updateDefer = async (deferId) => {
+                        const res = await fetch(`/api/update_jurisdiction_defer?id=${jurisdictionId}`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify(deferId),
+                        });
 
-                          // Submit changes immediately
-                          const submitData = async () => {
-                          const res = await fetch(`/api/update_jurisdiction_defer?id=${jurisdictionId}`, {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify(option.value),
-                          });
+                        // Submission error
+                        if (!res.ok) {
+                          alert("Failed to update info. Please try again later.");
+                          return;
+                        }
+                      };
 
-                          // Submission error
-                          if (!res.ok) {
-                            alert("Failed to update info. Please try again later.");
-                            return;
-                          }
-                        };
-
-                        submitData();
-                        }}
-                      />
-                    </div>
+                      return (
+                        <>
+                          <Field name="defer">
+                            {({ field }) => (
+                              <JurisdictionSelector
+                                value={field.value}
+                                onChange={(option) => {
+                                  setFieldValue("defer", option);
+                                  updateDefer(option.value);
+                                }}
+                                onBlur={field.onBlur}
+                              />
+                            )}
+                          </Field>
+                          <div
+                            onClick={() => {
+                              setFieldValue("defer", null);
+                              updateDefer(null);
+                            }}
+                            className="text-blue-700 text-m ml-2 cursor-pointer"
+                          >
+                            Clear
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                   <div className="text-gray-500 text-sm mt-2">
                     Select another jurisdiction if this one is managed by another police department.
@@ -244,6 +261,7 @@ export default function JurisdictionInfoForm() {
                       const presentTypes = new Set(
                         values.methods.map(m => m.method)
                       );
+                      
                       return (
                         <div className="flex justify-between items-center">
                           {Object.entries(COMMON_METHODS_META).map(([key, type]) => (

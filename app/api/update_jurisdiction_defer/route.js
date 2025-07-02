@@ -10,26 +10,26 @@ export async function POST(req) {
     const jurisdictionId = searchParams.get("id");
 
     if (!jurisdictionId) {
-        return new NextResponse(null, { status: 400 });
+      return new NextResponse(null, { status: 400 });
     }
 
-    // Check if jurisdictionId exists
+    // Check if jurisdictionId is valid
     if (!JURISDICTION_METADATA[jurisdictionId]) {
-        return new NextResponse(null, { status: 404 });
+      return new NextResponse(null, { status: 404 }); 
     }
     
     // Get user submission
     let deferJurisdictionId;
 
     try {
-        deferJurisdictionId = await req.json();
+      deferJurisdictionId = await req.json();
     } catch {
-        return new NextResponse(null, { status: 400 });
+      return new NextResponse(null, { status: 400 });
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && !(deferJurisdictionId in JURISDICTION_METADATA)) {
-        return new NextResponse(null, { status: 400 });
+    if (deferJurisdictionId != null && (typeof deferJurisdictionId != "string" || !(deferJurisdictionId in JURISDICTION_METADATA))) {
+      return new NextResponse(null, { status: 400 });
     }
 
     // Move existing data to history
