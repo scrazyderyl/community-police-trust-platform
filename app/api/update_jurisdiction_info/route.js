@@ -36,8 +36,8 @@ export async function POST(req) {
     }
 
     // Additional check for defer field
-    if (data.defer && !(data.defer.value in JURISDICTION_METADATA)) {
-        return new NextResponse(null, { status: 400 });
+    if (data.defer != null && (typeof data.defer.value != "string" || !(data.defer.value in JURISDICTION_METADATA))) {
+      return new NextResponse(null, { status: 400 });
     }
   
     // Process submission

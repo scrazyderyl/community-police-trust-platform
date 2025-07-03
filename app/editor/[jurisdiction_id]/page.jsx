@@ -298,18 +298,13 @@ export default function JurisdictionInfoForm() {
                   <div className="mb-1 text-xl font-bold text-gray-800 flex items-center gap-2">
                     Documents
                     {
-                      values.documents.length > 0 &&
                       submitCount > lastDocAddSubmitCount &&
+                      // Check for at least one verification error
                       Array.isArray(errors?.documents) &&
-                      errors.documents.some(
-                        (e) => typeof e === "object" && e !== null && "verified" in e && typeof e.verified === "string"
-                      ) && (
-                        <span className="text-red-500 text-xs font-bold ml-3 form-error-message" tabIndex={-1}>
-                          {
-                            errors.documents.find(
-                              (e) => typeof e === "object" && e !== null && "verified" in e && typeof e.verified === "string"
-                            ).verified
-                          }
+                      errors.documents.some(error => error.verified)
+                      && (
+                        <span className="text-red-500 text-xs font-bold ml-3 form-error-message">
+                          All links must be verified.
                         </span>
                       )}
                   </div>
@@ -432,7 +427,7 @@ export default function JurisdictionInfoForm() {
                     {
                       submitCount > lastMethodAddSubmitCount &&
                       typeof errors?.methods === "string" && (
-                        <span className="text-red-500 text-xs font-bold ml-3 form-error-message" tabIndex={-1}>
+                        <span className="text-red-500 text-xs font-bold ml-3 form-error-message">
                           {errors.methods}
                         </span>
                       )
@@ -468,8 +463,8 @@ export default function JurisdictionInfoForm() {
                                     
                                     return (
                                       <Draggable
-                                        key={`${method.method}-${idx}`}
-                                        draggableId={`method-${idx}`}
+                                        key={idx}
+                                        draggableId={idx.toString()}
                                         index={idx}
                                       >
                                         {(dragProvided, dragSnapshot) => (
