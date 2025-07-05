@@ -352,6 +352,7 @@ export default function JurisdictionInfoForm() {
                           return (
                             <div>
                               {values.documents.map((doc, idx) => {
+                                const url = doc.url.trim();
                                 let urlFieldRef;
 
                                 return (
@@ -390,11 +391,11 @@ export default function JurisdictionInfoForm() {
                                     </div>
                                     <div className="flex items-center">
                                       <LinkVerificationButton
-                                        enabled={isUrlValid(doc.url)}
+                                        enabled={isUrlValid(url)}
                                         verified={doc.verified}
                                         onClick={() => {
                                           setLinkPreviewOpen(true);
-                                          setLinkPreview({ url: doc.url, fieldPath: `documents[${idx}].verified`, attachedField: urlFieldRef });
+                                          setLinkPreview({ url: url, fieldPath: `documents[${idx}].verified`, attachedField: urlFieldRef });
                                         }}
                                       />
                                       <button
@@ -510,7 +511,7 @@ export default function JurisdictionInfoForm() {
                                                           if (method.method === "online form") {
                                                             // Online form
                                                             fieldName = `methods[${idx}].values[${vIdx}].value`;
-                                                            let url = val.value;
+                                                            let url = val.value.trim();
                                                             let urlFieldRef;
 
                                                             fieldElement = (

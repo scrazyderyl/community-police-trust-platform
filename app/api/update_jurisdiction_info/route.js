@@ -5,20 +5,41 @@ import { db } from "@/firebaseConfig";
 import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
 
 function processData(data) {
-  // Remove verified fields 
-  const cleanedDocuments = data.documents.map(({ verified, ...rest }) => rest);
+  // Remove empty entries and strip entries of verified field
+  let cleanedDocuments = [];
 
-  for (let method of data.methods) {
-    if (method.method === "online form") {
-      method.values = method.values.map(({ verified, value }) => value);
+  for (let document of data.documents) {
+    if (document.url) {
+      cleanedDocuments.push({
+        name: document.name.trim(),
+        url: document.url.trim(),
+      })
     }
   }
 
-  return {
-    ...data,
-    documents: cleanedDocuments,
-    last_updated: new Date().toISOString(),
-  };
+  data.documents = cleanedDocuments;
+
+  for (let method of data.methods) {
+    let cleanedValues = [];
+
+    if (method.method === "online form") {
+      for (let value of method.values) {
+        if (value.value) {
+          cleanedValues.push(value.value.trim());
+        }
+      }
+    } else {
+      for (let value of method.values) {
+        if (value) {
+          cleanedValues.push(value.trim());
+        }
+      }
+    }
+
+    method.values = cleanedValues;
+  }
+
+  data.last_updated = new Date().toISOString();
 }
 
 export async function POST(req) {
@@ -51,14 +72,14 @@ export async function POST(req) {
     } catch (error) {
       return new NextResponse(null, { status: 400 });
     }
-
+    
     // Additional check for defer field
     if (data.defer != null && (typeof data.defer.value != "string" || !(data.defer.value in JURISDICTION_METADATA))) {
       return new NextResponse(null, { status: 400 });
     }
-  
+    
     // Process submission
-    const newData = processData(data);
+    processData(data);
 
     // Move existing data to history
     try {
@@ -77,14 +98,13 @@ export async function POST(req) {
     // Update database
     try {
       const docRef = doc(db, "jurisdiction_info", jurisdictionId);
-      await setDoc(docRef, newData);
+      await setDoc(docRef, data);
       
       return new NextResponse(null, { status: 200 });
     } catch (error) {
       return new NextResponse(null, { status: 500 });
     }
   } catch (error) {
-    console.log(error);
     return new NextResponse(null, { status: 500 });
   }
 }
