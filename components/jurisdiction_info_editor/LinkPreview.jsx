@@ -13,8 +13,12 @@ export default function LinkPreview({ hide, url, onConfirm, onChange }) {
   return (
     <div className="w-[60rem]">
       <h2 className="text-xl font-bold mb-4 text-center">Link Preview</h2>
-      <iframe src={url} className="flex-1 w-full mb-2 border border-gray-500 min-h-[70vh]" />
-      <div className="w-full flex justify-center mb-2 min-h-[1.5rem]">
+      <div className="w-full h-[60vh] border border-gray-500">
+        <iframe
+          src={url}
+          className="w-full h-full" />
+      </div>
+      <div className="w-full flex justify-center mt-2 min-h-[1.5rem]">
         {confirmEnabled ? (
           <div className="text-red-600 text-center">
             Preview failed to load?{" "}
@@ -29,7 +33,7 @@ export default function LinkPreview({ hide, url, onConfirm, onChange }) {
           </div>
         ) : null}
       </div>
-      <div className="flex gap-4 w-full justify-center pb-2">
+      <div className="w-full mt-2 flex gap-4 justify-center">
         {
           confirmEnabled ?
           <button

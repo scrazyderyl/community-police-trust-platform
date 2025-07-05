@@ -13,6 +13,7 @@ import JurisdictionSelector from "@/components/jurisdiction_info_editor/Jurisdic
 import LinkPreview from "@/components/jurisdiction_info_editor/LinkPreview";
 import FeedbackForm from "@/components/jurisdiction_info_editor/FeedbackForm";
 import Modal from "@/components/Modal";
+import LinkVerificationButton from "@/components/jurisdiction_info_editor/LinkVerificationButton";
 
 const COMMON_METHODS_META = {
   "online form": {
@@ -20,39 +21,47 @@ const COMMON_METHODS_META = {
     icon: "/icons/contact/online-form.svg",
     placeholder: "Form link",
     addLabel: "Add another form link",
+    defaultValue: {
+      value: "",
+      verified: false
+    }
   },
   email: {
     label: "Email",
     icon: "/icons/contact/email.svg",
     placeholder: "Email address",
     addLabel: "Add another email address",
+    defaultValue: ""
   },
   phone: {
     label: "Phone",
     icon: "/icons/contact/phone.svg",
     placeholder: "Phone number",
     addLabel: "Add another phone number",
+    defaultValue: ""
   },
   mail: {
     label: "Mail",
     icon: "/icons/contact/mail.svg",
     placeholder: "Mailing address",
     addLabel: "Add another mailing address",
+    defaultValue: ""
   },
   "in person": {
     label: "In Person",
     icon: "/icons/contact/in-person.svg",
     placeholder: "Address",
     addLabel: "Add another address",
+    defaultValue: ""
   },
 };
 
 const OTHER_METHOD_META = {
-  key: "other",
   label: "Other",
   icon: "/icons/contact/other.svg",
   placeholder: "Social media handle, messaging app, etc",
   addLabel: "Add another contact",
+  defaultValue: ""
 };
 
 const ACCEPTS_OPTIONS = [
@@ -69,6 +78,9 @@ function reorder(list, startIndex, endIndex) {
 
   return result;
 }
+
+const urlValidator = Yup.string().url().required();
+const isUrlValid = (url) => urlValidator.isValidSync(url);
 
 export default function JurisdictionInfoForm() {
   const params = useParams();
@@ -93,9 +105,30 @@ export default function JurisdictionInfoForm() {
         }
         
         const data = await res.json();
+        const { metadata, info } = data;
 
-        setInfo(data.info);
-        setMetadata(data.metadata);
+        // Mark all existing URLs are verified
+        const documents = info.documents;
+
+        for (let doc of documents) {
+          doc.verified = true;
+        }
+
+        const methods = info.methods;
+
+        for (let method of methods) {
+          if (method.method === "online form") {
+            for (let vIdx = 0; vIdx < method.values.length; vIdx++) {
+              method.values[vIdx] = {
+                value: method.values[vIdx],
+                verified: true
+              }
+            }
+          }
+        }
+
+        setMetadata(metadata);
+        setInfo(info);
         setIsPending(false);
       } catch (err) {
         setError(err);
@@ -112,8 +145,7 @@ export default function JurisdictionInfoForm() {
   const prevSubmitCount = useRef(0); // Used for scrolling to first error
 
   const [linkPreviewOpen, setLinkPreviewOpen] = useState(false);
-  const [linkPreview, setLinkPreview] = useState({ url: "", docIdx: -1 });
-  const urlInputRefs = useRef({});
+  const [linkPreview, setLinkPreview] = useState({ url: "", attachedField: null });
   
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false);
 
@@ -194,7 +226,7 @@ export default function JurisdictionInfoForm() {
                   <div className="bg-white rounded-xl shadow mt-10 mb-10 p-8 min-w-[28rem] h-fit sticky top-10">
                     {/* Title */}
                     <h1 className="text-2xl font-bold mb-1">{metadata.name}</h1>
-                    <div className="mb-6 text-sm text-gray-500">
+                    <div className="mb-6 text-sm text-gray-500"> 
                       Not the right jurisdiction?{" "}
                       <a
                         href="/editor"
@@ -309,7 +341,8 @@ export default function JurisdictionInfoForm() {
                             <span className="text-red-500 text-xs font-bold ml-3 form-error-message">
                               All links must be verified.
                             </span>
-                          )}
+                          )
+                        }
                       </div>
                       <div className="text-base mb-4">
                         Add links to any relevant documents, such as complaint forms or right-to-know forms.
@@ -319,7 +352,7 @@ export default function JurisdictionInfoForm() {
                           return (
                             <div>
                               {values.documents.map((doc, idx) => {
-                                const isVerified = doc.verified === undefined ? true : doc.verified;
+                                let urlFieldRef;
 
                                 return (
                                   <div key={idx} className="flex items-start mb-2 gap-2">
@@ -343,7 +376,7 @@ export default function JurisdictionInfoForm() {
                                         type="text"
                                         placeholder="Link"
                                         className="px-3 py-2 border border-gray-300 rounded"
-                                        innerRef={el => { urlInputRefs.current[idx] = el; }}
+                                        innerRef={el => { urlFieldRef = el }}
                                         onChange={e => {
                                           setFieldValue(`documents[${idx}].url`, e.target.value);
                                           setFieldValue(`documents[${idx}].verified`, false);
@@ -356,50 +389,14 @@ export default function JurisdictionInfoForm() {
                                       />
                                     </div>
                                     <div className="flex items-center">
-                                      {(() => {
-                                        const isUrlValid = Yup.string().url().required().isValidSync(doc.url);
-
-                                        if (!isUrlValid) {
-                                          // Invalid URL (including empty field)
-                                          return (
-                                            <button
-                                              type="button"
-                                              className="ml-2 px-3 py-2 w-22 rounded transition font-semibold bg-gray-100 text-gray-400 border border-gray-300"
-                                              disabled
-                                              title="Enter a valid URL"
-                                            >
-                                              Verify
-                                            </button>
-                                          );
-                                        } else if (!isVerified) {
-                                          // URL awaiting verification
-                                          return (
-                                            <button
-                                              type="button"
-                                              className="ml-2 px-3 py-2 w-22 rounded transition font-semibold bg-yellow-100 text-yellow-800 border border-yellow-400 cursor-pointer"
-                                              onClick={() => {
-                                                setLinkPreviewOpen(true);
-                                                setLinkPreview({ url: doc.url, docIdx: idx });
-                                              }}
-                                              title="Verify this link"
-                                            >
-                                              Verify
-                                            </button>
-                                          );
-                                        } else {
-                                          // Verified
-                                          return (
-                                            <button
-                                              type="button"
-                                              className="ml-2 px-3 py-2 w-22 rounded transition font-semibold bg-green-100 text-green-800 border border-green-400"
-                                              disabled
-                                              title="Link verified"
-                                            >
-                                              Verified
-                                            </button>
-                                          );
-                                        }
-                                      })()}
+                                      <LinkVerificationButton
+                                        enabled={isUrlValid(doc.url)}
+                                        verified={doc.verified}
+                                        onClick={() => {
+                                          setLinkPreviewOpen(true);
+                                          setLinkPreview({ url: doc.url, fieldPath: `documents[${idx}].verified`, attachedField: urlFieldRef });
+                                        }}
+                                      />
                                       <button
                                         type="button"
                                         onClick={() => remove(idx)}
@@ -507,10 +504,43 @@ export default function JurisdictionInfoForm() {
                                                     {({ push: pushValue, remove: removeValue }) => (
                                                       <div className="mb-2 space-y-2">
                                                         {method.values.map((val, vIdx) => {
-                                                          const fieldName = `methods[${idx}].values[${vIdx}]`;
-                                                          let fieldElement = null;
+                                                          let fieldName;
+                                                          let fieldElement;
 
-                                                          if (method.method === "phone") {
+                                                          if (method.method === "online form") {
+                                                            // Online form
+                                                            fieldName = `methods[${idx}].values[${vIdx}].value`;
+                                                            let url = val.value;
+                                                            let urlFieldRef;
+
+                                                            fieldElement = (
+                                                              <>
+                                                                <Field
+                                                                  key={vIdx}
+                                                                  name={fieldName}
+                                                                  type="text"
+                                                                  className="w-full px-3 py-2 border border-gray-300 rounded [&:not(:first-child)]:mt-1"
+                                                                  onChange={e => {
+                                                                    setFieldValue(`methods[${idx}].values[${vIdx}].value`, e.target.value);
+                                                                    setFieldValue(`methods[${idx}].values[${vIdx}].verified`, false);
+                                                                  }}
+                                                                  innerRef={el => { urlFieldRef = el }}
+                                                                  placeholder={methodMeta.placeholder}
+                                                                />
+                                                                <LinkVerificationButton
+                                                                  enabled={isUrlValid(url)}
+                                                                  verified={val.verified}
+                                                                  onClick={() => {
+                                                                    setLinkPreviewOpen(true);
+                                                                    setLinkPreview({ url: url, fieldPath: `methods[${idx}].values[${vIdx}].verified`, attachedField: urlFieldRef });
+                                                                  }}
+                                                                />
+                                                              </>
+                                                            )
+                                                          } else if (method.method === "phone") {
+                                                            // Phone
+                                                            fieldName = `methods[${idx}].values[${vIdx}]`;
+                                                            
                                                             fieldElement = (
                                                               <Field name={fieldName} key={vIdx}>
                                                                 {({ field, form }) => (
@@ -524,12 +554,15 @@ export default function JurisdictionInfoForm() {
                                                               </Field>
                                                             );
                                                           } else {
+                                                            // Everything else
+                                                            fieldName = `methods[${idx}].values[${vIdx}]`;
+
                                                             fieldElement = (
                                                               <Field
                                                                 key={vIdx}
                                                                 name={fieldName}
                                                                 type="text"
-                                                                className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded [&:not(:first-child)]:mt-1"
                                                                 placeholder={methodMeta.placeholder}
                                                               />
                                                             );
@@ -558,14 +591,28 @@ export default function JurisdictionInfoForm() {
                                                             </Fragment>
                                                           );
                                                         })}
-                                                        <button
-                                                          type="button"
-                                                          className="mt-2 bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100 transition text-sm flex items-center hover:cursor-pointer"
-                                                          onClick={() => pushValue("")}
-                                                          title={methodMeta.addLabel}
-                                                        >
-                                                          + {methodMeta.addLabel}
-                                                        </button>
+                                                        <div className="flex mt-2 items-center">
+                                                          <button
+                                                            type="button"
+                                                            className="bg-blue-50 text-blue-700 px-3 py-1 rounded hover:bg-blue-100 transition text-sm flex items-center hover:cursor-pointer"
+                                                            onClick={() => pushValue(methodMeta.defaultValue)}
+                                                            title={methodMeta.addLabel}
+                                                          >
+                                                            + {methodMeta.addLabel}
+                                                          </button>
+                                                          {/* URL verification error for online forms */}
+                                                          { method.method === "online form" &&
+                                                            submitCount > lastMethodAddSubmitCount &&
+                                                            Array.isArray(errors?.methods) &&
+                                                            Array.isArray(errors?.methods[idx]?.values) &&
+                                                            errors.methods[idx].values.some(error => error.verified)
+                                                            && (
+                                                              <span className="text-red-500 text-xs font-bold ml-3 form-error-message">
+                                                                All links must be verified.
+                                                              </span>
+                                                            )
+                                                          }
+                                                        </div>
                                                       </div>
                                                     )}
                                                   </FieldArray>
@@ -615,7 +662,7 @@ export default function JurisdictionInfoForm() {
                                   onClick={() =>
                                     push({
                                       method: methodType,
-                                      values: [""],
+                                      values: [type.defaultValue], // Shallow copy?
                                       notes: "",
                                       accepts: [],
                                     })
@@ -633,7 +680,7 @@ export default function JurisdictionInfoForm() {
                                 onClick={() =>
                                   push({
                                     method: "other",
-                                    values: [""],
+                                    values: [OTHER_METHOD_META.defaultValue],
                                     notes: "",
                                     accepts: [],
                                   })
@@ -670,15 +717,15 @@ export default function JurisdictionInfoForm() {
                   url={linkPreview.url}
                   hide={() => { setLinkPreviewOpen(false) }}
                   onConfirm={() => {
-                    const { docIdx } = linkPreview;
-                    setFieldValue(`documents[${docIdx}].verified`, true);
+                    const { fieldPath } = linkPreview;
+                    setFieldValue(fieldPath, true);
                   }}
                   onChange={() => {
                     // Focus URL field
-                    const { docIdx } = linkPreview;
+                    const { attachedField } = linkPreview;
 
                     setTimeout(() => {
-                      urlInputRefs.current[docIdx].focus();
+                      attachedField.focus();
                     }, 0);
                   }}
                 />

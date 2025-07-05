@@ -4,6 +4,23 @@ import { VALIDATION_SCHEMA } from "@/lib/jurisdiction_info_schema";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
 
+function processData(data) {
+  // Remove verified fields 
+  const cleanedDocuments = data.documents.map(({ verified, ...rest }) => rest);
+
+  for (let method of data.methods) {
+    if (method.method === "online form") {
+      method.values = method.values.map(({ verified, value }) => value);
+    }
+  }
+
+  return {
+    ...data,
+    documents: cleanedDocuments,
+    last_updated: new Date().toISOString(),
+  };
+}
+
 export async function POST(req) {
   try {
     // Validate URL parameters
@@ -41,12 +58,7 @@ export async function POST(req) {
     }
   
     // Process submission
-    const cleanedDocuments = data.documents.map(({ verified, ...rest }) => rest);
-    const newData = {
-      ...data,
-      documents: cleanedDocuments,
-      last_updated: new Date().toISOString(),
-    };
+    const newData = processData(data);
 
     // Move existing data to history
     try {
