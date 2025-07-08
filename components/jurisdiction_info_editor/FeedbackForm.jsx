@@ -24,7 +24,6 @@ export default function FeedbackForm({ hide }) {
           // Submission success
           resetForm();
           hide();
-          setVisibility(false);
           alert("Thank you for your feedback!");
         }
 

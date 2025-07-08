@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import JURISDICTION_METADATA from "@/lib/jurisdiction_gis";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { getJurisdictionById } from "@/services/JurisdictionGisService";
 
 function getDefaultComplaintInfo() {
   return {
@@ -23,9 +23,9 @@ export async function GET(req) {
     }
 
     // Check if the id exists
-    const metadata = JURISDICTION_METADATA[jurisdictionId];
+    const gis_info = getJurisdictionById(jurisdictionId);
 
-    if (!metadata) {
+    if (!gis_info) {
       return new NextResponse(null, { status: 404 });
     }
 
@@ -47,13 +47,15 @@ export async function GET(req) {
     }
 
     if (info.defer) {
+      let deferJurisdiction = getJurisdictionById(info.defer);
+
       info.defer = {
         value: info.defer,
-        label: JURISDICTION_METADATA[info.defer].name
+        label: deferJurisdiction.name
       }
     }
 
-    return NextResponse.json({ info: info, metadata: metadata });
+    return NextResponse.json({ info: info, gisInfo: gis_info });
   } catch (error) {
     return new NextResponse(null, { status: 500 });
   }

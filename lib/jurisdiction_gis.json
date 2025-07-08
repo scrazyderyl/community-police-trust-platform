@@ -1,4 +1,4 @@
-const JURISDICTION_METADATA = {
+{
   "ALLEGHENY_COUNTY": {
     "name": "Allegheny County"
   },
@@ -393,5 +393,3 @@ const JURISDICTION_METADATA = {
     "name": "Trafford Borough"
   }
 }
-
-export default JURISDICTION_METADATA;

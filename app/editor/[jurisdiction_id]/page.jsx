@@ -14,6 +14,7 @@ import LinkPreview from "@/components/jurisdiction_info_editor/LinkPreview";
 import FeedbackForm from "@/components/jurisdiction_info_editor/FeedbackForm";
 import Modal from "@/components/Modal";
 import LinkVerificationButton from "@/components/jurisdiction_info_editor/LinkVerificationButton";
+import JurisdicionCreationForm from "../../../components/jurisdiction_info_editor/JurisdictionCreationForm";
 
 const COMMON_METHODS_META = {
   "online form": {
@@ -87,7 +88,7 @@ export default function JurisdictionInfoForm() {
   const jurisdictionId = params.jurisdiction_id;
 
   const [info, setInfo] = useState();
-  const [metadata, setMetadata] = useState();
+  const [gisInfo, setGisInfo] = useState();
   const [isPending, setIsPending] = useState(true);
   const [error, setError] = useState(null);
 
@@ -105,7 +106,7 @@ export default function JurisdictionInfoForm() {
         }
         
         const data = await res.json();
-        const { metadata, info } = data;
+        const { gisInfo, info } = data;
 
         // Mark all existing URLs are verified
         const documents = info.documents;
@@ -127,7 +128,7 @@ export default function JurisdictionInfoForm() {
           }
         }
 
-        setMetadata(metadata);
+        setGisInfo(gisInfo);
         setInfo(info);
         setIsPending(false);
       } catch (err) {
@@ -143,6 +144,8 @@ export default function JurisdictionInfoForm() {
   const [lastDocAddSubmitCount, setLastDocAddSubmitCount] = useState(0);
   const [lastMethodAddSubmitCount, setLastMethodAddSubmitCount] = useState(0);
   const prevSubmitCount = useRef(0); // Used for scrolling to first error
+
+  const [jurisdictionCreatorOpen, setJurisdictionCreatorOpen] = useState(false);
 
   const [linkPreviewOpen, setLinkPreviewOpen] = useState(false);
   const [linkPreview, setLinkPreview] = useState({ url: "", attachedField: null });
@@ -163,7 +166,6 @@ export default function JurisdictionInfoForm() {
     <div className="min-h-screen flex justify-center bg-gray-50">
       <Formik
         initialValues={info}
-        enableReinitialize
         validationSchema={VALIDATION_SCHEMA}
         onSubmit={(values, { setSubmitting }) => {
           const submitData = async () => {
@@ -223,9 +225,9 @@ export default function JurisdictionInfoForm() {
               <Form className="space-y-6">
                 <div className="flex gap-8">
                   {/* Left static section */}
-                  <div className="bg-white rounded-xl shadow mt-10 mb-10 p-8 min-w-[28rem] h-fit sticky top-10">
+                  <div className="bg-white rounded-xl shadow mt-10 mb-10 p-8 min-w-[28rem] max-w-[28rem] h-fit sticky top-10">
                     {/* Title */}
-                    <h1 className="text-2xl font-bold mb-1">{metadata.name}</h1>
+                    <h1 className="text-2xl font-bold mb-1">{gisInfo.name}</h1>
                     <div className="mb-6 text-sm text-gray-500"> 
                       Not the right jurisdiction?{" "}
                       <a
@@ -277,7 +279,7 @@ export default function JurisdictionInfoForm() {
                                 setFieldValue("defer", null);
                                 updateDefer(null);
                               }}
-                              className="text-blue-700 text-m ml-2 cursor-pointer"
+                              className="text-blue-700 hover:text-blue-900 text-m ml-2 cursor-pointer"
                             >
                               Clear
                             </div>
@@ -285,8 +287,17 @@ export default function JurisdictionInfoForm() {
                         )
                       })()}
                     </div>
-                    <div className="text-gray-500 text-sm mt-2">
-                      Select another jurisdiction if this one is managed by another police department.
+                    <div className="text-sm mt-2">
+                      <span className="text-gray-500">Select another jurisdiction if this one is managed by another police department. </span>
+                      <span className="text-gray-600 font-medium">Don't see your jurisdiction? </span>
+                      <span
+                        onClick={() => {
+                          setJurisdictionCreatorOpen(true);
+                        }}
+                        className="inline font-medium text-blue-700 hover:text-blue-900 text-m cursor-pointer"
+                      >
+                        Add it
+                      </span>
                     </div>
                     {/* Fill progress */}
                     <div className="mt-4">
@@ -707,9 +718,9 @@ export default function JurisdictionInfoForm() {
                 </div>
               </Form>
               <Modal
-                open={feedbackFormOpen}
-                onOpenChange={setFeedbackFormOpen}>
-                <FeedbackForm hide={() => { setFeedbackFormOpen(false) }}/>
+                open={jurisdictionCreatorOpen}
+                onOpenChange={setJurisdictionCreatorOpen}>
+                  <JurisdicionCreationForm hide={() => setJurisdictionCreatorOpen(false)}/>
               </Modal>
               <Modal
                 open={linkPreviewOpen}
@@ -730,6 +741,11 @@ export default function JurisdictionInfoForm() {
                     }, 0);
                   }}
                 />
+              </Modal>
+              <Modal
+                open={feedbackFormOpen}
+                onOpenChange={setFeedbackFormOpen}>
+                <FeedbackForm hide={() => setFeedbackFormOpen(false)}/>
               </Modal>
             </>
           )

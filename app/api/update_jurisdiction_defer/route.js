@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import JURISDICTION_METADATA from "@/lib/jurisdiction_gis";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc, collection, addDoc, updateDoc, setDoc } from "firebase/firestore";
+import { jurisidictionExists } from "@/services/JurisdictionGisService";
 
 export async function POST(req) {
   try {
@@ -14,7 +14,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId is valid
-    if (!JURISDICTION_METADATA[jurisdictionId]) {
+    if (!jurisidictionExists(jurisdictionId)) {
       return new NextResponse(null, { status: 404 }); 
     }
     
@@ -28,7 +28,7 @@ export async function POST(req) {
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && (typeof deferJurisdictionId != "string" || !(deferJurisdictionId in JURISDICTION_METADATA))) {
+    if (deferJurisdictionId != null && !jurisidictionExists(deferJurisdictionId)) {
       return new NextResponse(null, { status: 400 });
     }
 

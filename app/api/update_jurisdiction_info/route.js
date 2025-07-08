@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import JURISDICTION_METADATA from "@/lib/jurisdiction_gis";
 import { VALIDATION_SCHEMA } from "@/lib/jurisdiction_info_schema";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
+import { jurisidictionExists } from "@/services/JurisdictionGisService";
 
 function processData(data) {
   // Remove empty entries and strip entries of verified field
@@ -53,7 +53,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId exists
-    if (!jurisdictionId in JURISDICTION_METADATA) {
+    if (!jurisidictionExists(jurisdictionId)) {
       return new NextResponse(null, { status: 404 });
     }
   
@@ -74,7 +74,7 @@ export async function POST(req) {
     }
     
     // Additional check for defer field
-    if (data.defer != null && (typeof data.defer.value != "string" || !(data.defer.value in JURISDICTION_METADATA))) {
+    if (data.defer != null && !jurisidictionExists(data.defer.value)) {
       return new NextResponse(null, { status: 400 });
     }
     
