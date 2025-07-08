@@ -1,16 +1,25 @@
-import { readFileSync, writeFileSync } from 'fs'
-import path from 'path'
+import { db } from '@/firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import Fuse from 'fuse.js';
 
-const filePath = path.join(process.cwd(), 'lib', 'jurisdiction_gis.json');
+async function getAllData() {
+  try {
+    const docRef = doc(db, "jurisdiction_gis", "index");
+    const docSnap = await getDoc(docRef);
 
-function readAllData() {
-  return JSON.parse(readFileSync(filePath, "utf8"));
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
 }
 
-export function findJurisdictionsByName(query) {
+export async function findJurisdictionsByName(query) {
   try {
-    const data = readAllData();
+    const data = await getAllData();
     const jurisdictions = Object.entries(data).map(([id, v]) => ({ id, name: v.name }));
     const fuse = new Fuse(jurisdictions, { keys: ["name"], threshold: 0.4 });
     const results = fuse.search(query).slice(0, 5).map(r => ({
@@ -24,9 +33,9 @@ export function findJurisdictionsByName(query) {
   }
 }
 
-export function getJurisdictionById(id) {
+export async function getJurisdictionById(id) {
   try {
-    const data = readAllData();
+    const data = await getAllData();
 
     return data[id];
   } catch (error) {
@@ -34,9 +43,9 @@ export function getJurisdictionById(id) {
   }
 }
 
-export function jurisidictionExists(id) {
+export async function jurisidictionExists(id) {
   try {
-    const data = readAllData();
+    const data = await getAllData();
 
     return id in data;
   } catch (error) {
@@ -44,9 +53,9 @@ export function jurisidictionExists(id) {
   }
 }
 
-export function addNewJurisdiction(id, name) {
+export async function addNewJurisdiction(id, name) {
   try {
-    const data = readAllData();
+    const data = await getAllData();
 
     // Don't overwrite if id exists
     if (id in data) {
@@ -58,8 +67,12 @@ export function addNewJurisdiction(id, name) {
       name: name
     };
 
-    // Write to json
-    writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    // Add entry to Firebase
+    const docRef = doc(db, "jurisdiction_gis", "index");
+
+    await updateDoc(docRef, {
+      [id]: { name: name }
+    });
 
     return true;
   } catch (error) {

@@ -23,7 +23,7 @@ export async function GET(req) {
     }
 
     // Check if the id exists
-    const gis_info = getJurisdictionById(jurisdictionId);
+    const gis_info = await getJurisdictionById(jurisdictionId);
 
     if (!gis_info) {
       return new NextResponse(null, { status: 404 });
@@ -47,7 +47,7 @@ export async function GET(req) {
     }
 
     if (info.defer) {
-      let deferJurisdiction = getJurisdictionById(info.defer);
+      let deferJurisdiction = await getJurisdictionById(info.defer);
 
       info.defer = {
         value: info.defer,

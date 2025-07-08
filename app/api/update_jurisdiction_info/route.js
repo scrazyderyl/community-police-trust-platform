@@ -53,7 +53,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId exists
-    if (!jurisidictionExists(jurisdictionId)) {
+    if (!(await jurisidictionExists(jurisdictionId))) {
       return new NextResponse(null, { status: 404 });
     }
   
@@ -74,7 +74,7 @@ export async function POST(req) {
     }
     
     // Additional check for defer field
-    if (data.defer != null && !jurisidictionExists(data.defer.value)) {
+    if (data.defer != null && !(await jurisidictionExists(data.defer.value))) {
       return new NextResponse(null, { status: 400 });
     }
     

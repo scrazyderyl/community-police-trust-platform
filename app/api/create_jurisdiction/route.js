@@ -27,7 +27,7 @@ export async function POST(req) {
     let id = name.toUpperCase().replaceAll(" ", "_");
 
     // Attempt to add the new jurisdiction
-    if (addNewJurisdiction(id, name)) {
+    if (await addNewJurisdiction(id, name)) {
       return NextResponse.json(id);
     } else {
       return new NextResponse(null, { status: 409 });

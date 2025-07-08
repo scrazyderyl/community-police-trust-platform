@@ -26,7 +26,7 @@ export async function POST(req) {
     // Automatically generate ID from name
     let id = name.toUpperCase().replaceAll(" ", "_");
     
-    return NextResponse.json(jurisidictionExists(id));
+    return NextResponse.json(await jurisidictionExists(id));
   } catch (error) {
     return new NextResponse(null, { status: 500 });
   }

@@ -14,7 +14,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId is valid
-    if (!jurisidictionExists(jurisdictionId)) {
+    if (!(await jurisidictionExists(jurisdictionId))) {
       return new NextResponse(null, { status: 404 }); 
     }
     
@@ -28,7 +28,7 @@ export async function POST(req) {
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && !jurisidictionExists(deferJurisdictionId)) {
+    if (deferJurisdictionId != null && !(await jurisidictionExists(deferJurisdictionId))) {
       return new NextResponse(null, { status: 400 });
     }
 

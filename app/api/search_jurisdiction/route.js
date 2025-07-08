@@ -19,7 +19,7 @@ export async function GET(req) {
     }
 
     // Do search
-    const results = findJurisdictionsByName(query);
+    const results = await findJurisdictionsByName(query);
 
     return NextResponse.json(results);
   } catch (error) {
