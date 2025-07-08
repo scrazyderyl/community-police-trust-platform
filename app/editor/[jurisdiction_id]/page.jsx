@@ -162,7 +162,7 @@ export default function JurisdictionInfoForm() {
     </div>
   }
 
-  document.title = gisInfo.name;
+  document.title = `Info Editor - ${gisInfo.name}`;
 
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">

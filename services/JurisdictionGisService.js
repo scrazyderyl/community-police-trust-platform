@@ -21,15 +21,36 @@ export async function findJurisdictionsByName(query, exclude) {
   try {
     const data = await getAllData();
     const jurisdictions = Object.entries(data).map(([id, v]) => ({ id, name: v.name }));
-    const fuse = new Fuse(jurisdictions, { keys: ["name"], threshold: 0.4 });
-    const results = fuse.search(query)
-      .filter(r => r.item.id !== exclude)
-      .slice(0, 5)
-      .map(r => ({
-        value: r.item.id,
-        label: r.item.name,
-      }));
+    let results;
 
+    // Show all entries if query is empty
+    if (query === "") {
+      results = jurisdictions
+        .map(r => ({
+          value: r.id,
+          label: r.name,
+        }))
+        .sort((a, b) => {
+          if (a.label < b.label) {
+            return -1
+          }
+          
+          if (a.label > b.label) {
+            return 1;
+          }
+
+          return 0;
+        })
+    } else {
+      const fuse = new Fuse(jurisdictions, { keys: ["name"], threshold: 0.4 });
+      results = fuse.search(query)
+        .slice(0, 5)
+        .map(r => ({
+          value: r.item.id,
+          label: r.item.name,
+        }));
+    }
+    
     return results;
   } catch (error) {
     return null;

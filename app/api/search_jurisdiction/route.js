@@ -5,19 +5,8 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     let query = searchParams.get("q");
-    let exclude = searchParams.get("exclude");
-
-    // Validate query
-    if (!query) {
-      return new NextResponse(null, { status: 400 });
-    }
-
-    // Return no results on blank query
     query = decodeURIComponent(query).trim();
-
-    if (query === "") {
-      return NextResponse.json([]);
-    }
+    let exclude = searchParams.get("exclude");
 
     // Do search
     const results = await findJurisdictionsByName(query, exclude);
