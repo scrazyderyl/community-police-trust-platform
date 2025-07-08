@@ -224,10 +224,10 @@ export default function JurisdictionInfoForm() {
 
           return (
             <>
-              <Form className="space-y-6">
-                <div className="flex gap-8">
+              <Form className="space-y-6 mt-10 mb-10">
+                <div className="flex gap-8 flex-col max-xl:items-center xl:flex-row">
                   {/* Left static section */}
-                  <div className="bg-white rounded-xl shadow mt-10 mb-10 p-8 min-w-[28rem] max-w-[28rem] h-fit sticky top-10">
+                  <div className="bg-white rounded-xl shadow p-8 min-w-[28rem] max-w-[28rem] h-fit xl:sticky top-10">
                     {/* Title */}
                     <h1 className="text-2xl font-bold mb-1">{gisInfo.name}</h1>
                     <div className="mb-6 text-sm text-gray-500"> 
@@ -341,7 +341,7 @@ export default function JurisdictionInfoForm() {
                     </div>
                   </div>
                   {/* Main form */}
-                  <div className="bg-white rounded-xl shadow mt-10 mb-10 p-8 max-w-4xl h-fit">
+                  <div className="bg-white rounded-xl shadow p-8 max-w-[48rem] h-fit">
                     {/* Documents */}
                     <div className="mb-6">
                       <div className="mb-1 text-xl font-bold text-gray-800 flex items-center gap-2">

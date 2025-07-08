@@ -31,7 +31,17 @@ export async function findJurisdictionsByName(query, exclude) {
           label: r.name,
         }))
         .filter(r => r.id !== exclude)
-        .sort((a, b) => a.label - b.label);
+        .sort((a, b) => {
+          if (a.label < b.label) {
+            return -1;
+          }
+
+          if (a.label > b.label) {
+            return 1;
+          }
+
+          return 0;
+        });
     } else {
       const fuse = new Fuse(jurisdictions, { keys: ["name"], threshold: 0.4 });
       results = fuse.search(query)

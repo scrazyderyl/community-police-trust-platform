@@ -89,10 +89,10 @@ const Nav = () => {
                 </li>
                 <li>
                   <a
-                    href="/community_tracker"
+                    href="/editor"
                     className="block py-2 px-4 hover:bg-gray-100"
                   >
-                    Community Tracker
+                    Contribute Filing Information
                   </a>
                 </li>
               </ul>
