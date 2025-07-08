@@ -30,20 +30,12 @@ export async function findJurisdictionsByName(query, exclude) {
           value: r.id,
           label: r.name,
         }))
-        .sort((a, b) => {
-          if (a.label < b.label) {
-            return -1
-          }
-          
-          if (a.label > b.label) {
-            return 1;
-          }
-
-          return 0;
-        })
+        .filter(r => r.id !== exclude)
+        .sort((a, b) => a.label - b.label);
     } else {
       const fuse = new Fuse(jurisdictions, { keys: ["name"], threshold: 0.4 });
       results = fuse.search(query)
+        .filter(r => r.item.id !== exclude)
         .slice(0, 5)
         .map(r => ({
           value: r.item.id,
