@@ -74,7 +74,7 @@ export async function POST(req) {
     }
     
     // Additional check for defer field
-    if (data.defer != null && !(await jurisidictionExists(data.defer.value))) {
+    if (data.defer != null && (!(await jurisidictionExists(data.defer.value)) || jurisdictionId === data.defer.value)) {
       return new NextResponse(null, { status: 400 });
     }
     

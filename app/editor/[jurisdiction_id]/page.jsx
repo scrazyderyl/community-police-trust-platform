@@ -162,6 +162,8 @@ export default function JurisdictionInfoForm() {
     </div>
   }
 
+  document.title = gisInfo.name;
+
   return (
     <div className="min-h-screen flex justify-center bg-gray-50">
       <Formik
@@ -266,6 +268,7 @@ export default function JurisdictionInfoForm() {
                               {({ field }) => (
                                 <JurisdictionSelector
                                   value={field.value}
+                                  exclude={jurisdictionId}
                                   onChange={(option) => {
                                     setFieldValue("defer", option);
                                     updateDefer(option.value);

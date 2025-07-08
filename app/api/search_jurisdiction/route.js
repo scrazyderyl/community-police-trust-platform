@@ -5,6 +5,7 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     let query = searchParams.get("q");
+    let exclude = searchParams.get("exclude");
 
     // Validate query
     if (!query) {
@@ -19,7 +20,7 @@ export async function GET(req) {
     }
 
     // Do search
-    const results = await findJurisdictionsByName(query);
+    const results = await findJurisdictionsByName(query, exclude);
 
     return NextResponse.json(results);
   } catch (error) {

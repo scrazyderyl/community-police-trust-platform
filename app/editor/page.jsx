@@ -28,9 +28,11 @@ export default function JurisdictionSearch() {
           <div className="mb-4 text-lg font-semibold text-gray-700 text-center">
             Update filing information for your jurisdiction
           </div>
-          <JurisdictionSelector
-            onChange={navigate}
-          />
+          <div className="h-[49px]">
+            <JurisdictionSelector
+              onChange={navigate}
+            />
+          </div>
           <div className="mt-2">
             <span className="text-gray-600 font-medium">Don't see your jurisdiction? </span>
             <span

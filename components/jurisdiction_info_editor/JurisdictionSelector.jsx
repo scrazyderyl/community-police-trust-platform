@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import AsyncSelect from "react-select/async";
 
-export default function JurisdictionSelector({ value, onChange, onBlur }) {
+export default function JurisdictionSelector({ value, exclude, onChange, onBlur }) {
   const loadOptions = useCallback(
     async (inputValue, callback) => {
       if (!inputValue) {
@@ -11,7 +11,7 @@ export default function JurisdictionSelector({ value, onChange, onBlur }) {
       }
 
       try {
-        const res = await fetch(`/api/search_jurisdiction?q=${encodeURIComponent(inputValue)}`);
+        const res = await fetch(`/api/search_jurisdiction?q=${encodeURIComponent(inputValue)}&exclude=${exclude}`);
 
         if (!res.ok) {
           callback([]);
