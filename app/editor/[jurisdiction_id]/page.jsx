@@ -169,8 +169,8 @@ export default function JurisdictionInfoForm() {
       <Formik
         initialValues={info}
         validationSchema={VALIDATION_SCHEMA}
-        onSubmit={(values, { setSubmitting }) => {
-          const submitData = async () => {
+        onSubmit={async (values) => {
+          try {
             const res = await fetch(`/api/update_jurisdiction_info?id=${jurisdictionId}`, {
               method: "POST",
               headers: {
@@ -178,20 +178,18 @@ export default function JurisdictionInfoForm() {
               },
               body: JSON.stringify(values),
             });
-
+  
             // Submission error
             if (!res.ok) {
               alert("Failed to update info. Please try again later.");
-              setSubmitting(false);
               return;
             }
-
+  
             // Submission success
-            setSubmitting(false);
             setFeedbackFormOpen(true);
-          };
-
-          submitData();
+          } catch (error) {
+            alert("Failed to update info. Please try again later.");
+          }
         }}
       >
         {({ values, setFieldValue, errors, submitCount }) => {

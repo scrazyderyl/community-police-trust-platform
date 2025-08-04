@@ -4,8 +4,8 @@ export default function FeedbackForm({ hide }) {
   return (
     <Formik
       initialValues={{ accountability: "", tool: "", followup: "" }}
-      onSubmit={(values, { setSubmitting, resetForm }) => {
-        const submitData = async () => {
+      onSubmit={async (values, { resetForm }) => {
+        try {
           const res = await fetch(`/api/submit_feedback`, {
             method: "POST",
             headers: {
@@ -17,7 +17,6 @@ export default function FeedbackForm({ hide }) {
           // Submission error
           if (!res.ok) {
             alert("Submission failed. Please try again later.");
-            setSubmitting(false);
             return;
           }
 
@@ -25,9 +24,9 @@ export default function FeedbackForm({ hide }) {
           resetForm();
           hide();
           alert("Thank you for your feedback!");
+        } catch (error) {
+          alert("Submission failed. Please try again later.");
         }
-
-        submitData();
       }}
     >
       {({ isSubmitting }) => (

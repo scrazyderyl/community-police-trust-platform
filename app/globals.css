@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.app {
+    @apply flex flex-col h-screen
+}
+
 .head_text {
     @apply mt-10 text-2xl font-extrabold leading-[1.15] text-black sm:text-5xl;
 }

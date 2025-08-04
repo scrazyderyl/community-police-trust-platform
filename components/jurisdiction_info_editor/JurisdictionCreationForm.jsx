@@ -9,8 +9,8 @@ export default function JurisdicionCreationForm({ hide }) {
     <Formik
       initialValues={{ name: "" }}
       validationSchema={VALIDATION_SCHEMA}
-      onSubmit={(values, { setSubmitting, resetForm }) => {
-        const submitData = async () => {
+      onSubmit={async (values, { resetForm }) => {
+        try {
           const res = await fetch(`/api/create_jurisdiction`, {
             method: "POST",
             headers: {
@@ -22,7 +22,6 @@ export default function JurisdicionCreationForm({ hide }) {
           // Submission error
           if (!res.ok) {
             alert("Submission failed. Please try again later.");
-            setSubmitting(false);
             return;
           }
 
@@ -32,9 +31,9 @@ export default function JurisdicionCreationForm({ hide }) {
 
           let newId = await res.json();
           router.push(`/editor/${newId}`)
+        } catch (error) {
+          alert("Submission failed. Please try again later.");
         }
-
-        submitData();
       }}
     >
       {({ isSubmitting }) => (
