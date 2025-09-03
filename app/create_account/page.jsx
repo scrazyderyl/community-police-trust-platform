@@ -1,19 +1,28 @@
 
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, Suspense } from "react";
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { isValidRedirect } from '@/lib/validation_rules';
 import StandardAccountForm from "@/components/community_records/StandardAccountForm";
 import CodeAccountForm from "@/components/community_records/CodeAccountForm";
 
+
 export default function CreateAccountPage() {
+  return (
+    <Suspense>
+      <CreateAccountContent />
+    </Suspense>
+  );
+}
+
+function CreateAccountContent() {
   const [accountType, setAccountType] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams?.get('redirect');
 
-  // Called by forms after successful account creation
   const handleAccountCreated = (token) => {
     if (isValidRedirect(redirect)) {
       router.replace(redirect);
