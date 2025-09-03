@@ -16,7 +16,7 @@ export default function JurisdictionSelector({ value, exclude, onChange, onBlur 
 
           return;
         }
-        
+
         const data = await res.json();
         callback(data);
       } catch {
@@ -30,18 +30,18 @@ export default function JurisdictionSelector({ value, exclude, onChange, onBlur 
     const loadAll = async () => {
       try {
         const res = await fetch("/api/search_jurisdiction?q=");
-  
+
         if (res.ok) {
           const data = await res.json();
-          
+
           setDefaultOptions(data)
         }
       } catch {
-        
+
       }
-      
+
     }
-    
+
     loadAll();
   }, [])
 
@@ -55,18 +55,16 @@ export default function JurisdictionSelector({ value, exclude, onChange, onBlur 
       onChange={onChange}
       onBlur={onBlur}
       styles={{
-        container: (base) => ({
+        control: (base, state) => ({
           ...base,
-          width: "100%",
-        }),
-        control: (base) => ({
-          ...base,
-          borderRadius: "10px",
-          paddingLeft: "0.5rem",
-          paddingRight: "0.5rem",
+          borderRadius: "0.25rem",
+          border: "1px solid #d1d5db",
+          paddingLeft: "0.25rem",
+          paddingRight: "0.25rem",
           paddingTop: "0.25rem",
           paddingBottom: "0.25rem",
-          fontSize: "1.125rem",
+          backgroundColor: state.isDisabled ? "#f9fafb" : "white",
+          boxShadow: state.isFocused ? "unset" : base.boxShadow
         }),
       }}
       noOptionsMessage={() => "No results found."}

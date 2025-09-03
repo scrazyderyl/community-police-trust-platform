@@ -23,8 +23,8 @@ export default function JurisdictionSearch() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+      <div className="w-full h-full flex items-center justify-center px-4">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
           <div className="mb-4 text-lg font-semibold text-gray-700 text-center">
             Update filing information for your jurisdiction
           </div>

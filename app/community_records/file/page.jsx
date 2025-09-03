@@ -33,7 +33,7 @@ export default function FilingWizard() {
 
         <div className="flex gap-6 justify-center">
           <Link
-            href="/community_records/login"
+            href="/login?redirect=%2Fcommunity_records%2Fcreate_record"
             className="bg-gray-100 hover:bg-gray-200 text-center px-8 py-5 rounded-lg text-lg font-medium border border-gray-300"
           >
             Yes, I’ve filed before
