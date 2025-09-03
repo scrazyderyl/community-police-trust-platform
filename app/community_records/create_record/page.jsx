@@ -2,8 +2,13 @@
 
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import { VALIDATION_SCHEMA } from "@/lib/record_schema";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import JurisdictionSelector from "@/components/jurisdiction_info_editor/JurisdictionSelector";
+
+const JurisdictionSelector = dynamic(
+  () => import("@/components/jurisdiction_info_editor/JurisdictionSelector"),
+  { ssr: false }
+);
 
 const CATEGORY_OPTIONS = [
   "Use of Force",
@@ -34,7 +39,7 @@ export default function CreateRecordPage() {
             when: today,
             jurisdiction: "",
             category: "",
-            anythingElse: "",
+            details: "",
             status: "",
             updates: [],
             resolution: {
@@ -165,12 +170,12 @@ export default function CreateRecordPage() {
                 </label>
                 <Field
                   as="textarea"
-                  name="anythingElse"
+                  name="details"
                   className="w-full border rounded px-3 py-2 resize-none"
                   rows={3}
                 />
                 <ErrorMessage
-                  name="anythingElse"
+                  name="details"
                   component="div"
                   className="text-red-500 text-xs"
                 />
