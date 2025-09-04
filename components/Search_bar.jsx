@@ -90,7 +90,7 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
     <div className="relative flex items-center justify-center mt-5 w-full">
       <form
         onSubmit={handleSearch}
-        className="flex relative w-full max-w-3xl overflow-hidden rounded-md shadow-md"
+        className="flex relative w-full max-w-3xl rounded-md shadow-md"
       >
         {/* Input Field */}
         <input
@@ -105,7 +105,7 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
 
         {/* Loading Indicator */}
         {loading && (
-          <div className="absolute top-1/2 right-12 transform -translate-y-1/2">
+          <div className="absolute top-1/2 right-[70px] transform -translate-y-1/2">
             <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
@@ -131,25 +131,26 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
             />
           </svg>
         </button>
+        
+        {/* Suggestions Dropdown */}
+        {suggestions.length > 0 && (
+          <ul
+            ref={suggestionsRef}
+            className="absolute top-full left-0 w-full max-w-3xl bg-white border border-gray-300 rounded-md shadow-md mt-2 z-[401]"
+          >
+            {suggestions.map((suggestion, index) => (
+              <li
+                key={index}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
+                {suggestion.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </form>
 
-      {/* Suggestions Dropdown */}
-      {suggestions.length > 0 && (
-        <ul
-          ref={suggestionsRef}
-          className="absolute top-full left-0 w-full max-w-3xl bg-white border border-gray-300 rounded-md shadow-md mt-2 z-[401]"
-        >
-          {suggestions.map((suggestion, index) => (
-            <li
-              key={index}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              {suggestion.label}
-            </li>
-          ))}
-        </ul>
-      )}
 
       {/* Map button - maintaining compatibility with your original component */}
       {show_map_btn && (
