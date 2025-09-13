@@ -14,18 +14,20 @@ type SelectedLocation = {
   content: React.ReactNode;
 };
 
-// Helper component to store the map instance in a ref
+type Suggestion = {
+  label: string;
+  position: { lat: number; lng: number };
+  boundingbox: [number, number, number, number]; // [south, north, west, east]
+};
+
 const SetMapRef: React.FC<{ mapRef: React.RefObject<LeafletMapType> }> = ({ mapRef }) => {
   const map = useMap();
-
   useEffect(() => {
     mapRef.current = map;
   }, [map, mapRef]);
-
   return null;
 };
 
-// Separate component for handling map clicks
 const MapClickHandler: React.FC<{ onClick: (lat: number, lng: number) => void }> = ({ onClick }) => {
   useMapEvents({
     click(e) {
@@ -37,7 +39,7 @@ const MapClickHandler: React.FC<{ onClick: (lat: number, lng: number) => void }>
 
 function MapViewer() {
   const mapRef = useRef<LeafletMapType | null>(null);
-  const suggestionCacheRef = useRef<{ lat: number; lng: number }[]>([]);
+  const suggestionCacheRef = useRef<Suggestion[]>([]);
 
   const [selected, setSelected] = useState<SelectedLocation | null>(null);
   const [showInfoCard, setShowInfoCard] = useState(false);
@@ -109,7 +111,6 @@ function MapViewer() {
         });
       } catch (err) {
         console.error("Error fetching info by coordinates:", err);
-
         setSelected({
           lat,
           lng,
@@ -120,23 +121,20 @@ function MapViewer() {
     []
   );
 
-  const fetchSuggestions = async (query: string) => {
+  const fetchSuggestions = async (query: string): Promise<Suggestion[]> => {
     query = query.trim();
-
-    if (!query) {
-      return [];
-    }
+    if (!query) return [];
 
     const results = await geocodeAddress(query);
 
     if (results) {
-      const suggestions = results.slice(0, 5).map((item) => ({
+      const suggestions: Suggestion[] = results.slice(0, 5).map((item) => ({
         label: item.display_name,
-        position: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) },
+        position: { lat: Number(item.lat), lng: Number(item.lon) },
+        boundingbox: item.boundingbox.map(Number) as [number, number, number, number],
       }));
 
-      suggestionCacheRef.current = suggestions.map((s) => s.position);
-
+      suggestionCacheRef.current = suggestions;
       return suggestions;
     }
 
@@ -147,14 +145,12 @@ function MapViewer() {
   const handleSearch = useCallback(
     async (query: string) => {
       const trimmed = query.trim();
-
       if (!trimmed) {
         alert("Please enter a valid address.");
         return;
       }
 
-      let suggestions;
-
+      let suggestions: Suggestion[];
       try {
         suggestions = await fetchSuggestions(trimmed);
       } catch (error) {
@@ -164,7 +160,9 @@ function MapViewer() {
       }
 
       if (suggestions && suggestions.length > 0) {
-        const { lat, lng } = suggestions[0].position;
+        const first = suggestions[0];
+        const { lat, lng } = first.position;
+        const [south, north, west, east] = first.boundingbox;
 
         setSelected({
           lat,
@@ -173,7 +171,12 @@ function MapViewer() {
         });
 
         if (mapRef.current) {
-          mapRef.current.setView([lat, lng], 14);
+          mapRef.current.fitBounds(
+            [
+              [south, west],
+              [north, east],
+            ]
+          );
         }
 
         showInfoForCoordinates(lat, lng, false);
