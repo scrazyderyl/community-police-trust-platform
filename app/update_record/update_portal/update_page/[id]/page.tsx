@@ -97,8 +97,8 @@ const UpdateRecordPage = () => {
           </label>
           <select
             className="w-full px-3 py-2 border rounded-md focus:outline-blue-500"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            value={record.location}
+            onChange={(e) => setRecord({ ...record, location: e.target.value })}
             required
           >
             <option value="">Select Location</option>

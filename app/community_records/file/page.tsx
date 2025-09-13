@@ -13,7 +13,7 @@ export default function FilingWizard() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      router.replace(redirectPath);
+      // router.replace(redirectPath);
     }
   }, [isLoggedIn, router]);
 

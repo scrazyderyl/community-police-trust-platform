@@ -191,7 +191,7 @@ const MapContainer = () => {
       </div>
       <div
         id="map_container"
-        className="flex justify-center h-[60vh] min-h-[400px] w-full flex-shrink-0 mt-8"
+        className="relative flex justify-center h-[60vh] min-h-[400px] w-full flex-shrink-0 mt-8"
       >
         {/* Map */}
         <div

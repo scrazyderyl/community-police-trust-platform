@@ -1,4 +1,4 @@
-// File: /components/map/InfoModal.jsx
+// File: /components/map/InfoModal.tsx
 "use client";
 import React from "react";
 

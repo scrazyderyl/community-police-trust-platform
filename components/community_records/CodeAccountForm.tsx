@@ -55,7 +55,7 @@ async function getQuestions(code) {
     offset += 4;
   }
 
-  const result = Array.from(indices).map((i) => questions[i]);
+  const result = Array.from(indices).map((i: number) => questions[i]);
 
   return result;
 }

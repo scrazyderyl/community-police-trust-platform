@@ -28,7 +28,7 @@ export async function POST(req) {
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && (!(await jurisidictionExists(deferJurisdictionId)) || jurisdictionId === data.defer.value)) {
+    if (deferJurisdictionId != null && (!(await jurisidictionExists(deferJurisdictionId)) || jurisdictionId === deferJurisdictionId)) {
       return new NextResponse(null, { status: 400 });
     }
 

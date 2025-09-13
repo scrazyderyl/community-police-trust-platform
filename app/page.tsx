@@ -1,7 +1,13 @@
-// page.jsx
+// page.tsx
 "use client";
 import React, { useState } from "react";
-import MapContainer from "@/components/map/MapContainer";
+import dynamic from "next/dynamic";
+
+const MapContainer = dynamic(
+  () => import("@/components/map/MapContainer"),
+  { ssr: false }
+);
+
 import DescriptionSection from "@/components/map/DescriptionSection";
 
 const HomePage = () => {

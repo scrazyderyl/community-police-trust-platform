@@ -7,8 +7,14 @@ import {
   deleteRecord,
 } from "@/services/FirestoreService";
 
+interface Counts {
+  submitted: number;
+  inProgress: number;
+  addressed: number;
+}
+
 const Community_tracker = () => {
-  const [summary, setSummary] = useState({});
+  const [summary, setSummary] = useState<Record<string, Counts>>({});
 
   useEffect(() => {
     fetchRecords();
@@ -108,7 +114,7 @@ const Community_tracker = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="py-4">
+                <td colSpan={5} className="py-4">
                   No records found
                 </td>
               </tr>

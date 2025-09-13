@@ -26,11 +26,11 @@ export async function findJurisdictionsByName(query, exclude) {
     // Show all entries if query is empty
     if (query === "") {
       results = jurisdictions
+        .filter(r => r.id !== exclude)
         .map(r => ({
           value: r.id,
           label: r.name,
         }))
-        .filter(r => r.id !== exclude)
         .sort((a, b) => {
           if (a.label < b.label) {
             return -1;

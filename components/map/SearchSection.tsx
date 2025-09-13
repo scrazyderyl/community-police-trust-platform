@@ -1,4 +1,4 @@
-// File: /components/map/SearchSection.jsx
+// File: /components/map/SearchSection.tsx
 "use client";
 import React from "react";
 import Search_bar from "@/components/Search_bar";

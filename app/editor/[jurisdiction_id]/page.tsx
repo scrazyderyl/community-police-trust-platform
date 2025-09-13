@@ -16,6 +16,30 @@ import Modal from "@/components/Modal";
 import LinkVerificationButton from "@/components/jurisdiction_info_editor/LinkVerificationButton";
 import JurisdicionCreationForm from "../../../components/jurisdiction_info_editor/JurisdictionCreationForm";
 
+interface JurisdictionInfo {
+  name?: string;
+  documents: DocumentInfo[];
+  methods: MethodInfo[];
+  defer?: any;
+}
+
+interface DocumentInfo {
+  name: string;
+  url: string;
+  verified: boolean;
+}
+
+interface MethodInfo {
+  method: string;
+  values: any[];
+  notes: string;
+  accepts: string[];
+}
+
+interface GisInfo {
+  name: string;
+}
+
 const COMMON_METHODS_META = {
   "online form": {
     label: "Online Form",
@@ -87,8 +111,8 @@ export default function JurisdictionInfoForm() {
   const params = useParams();
   const jurisdictionId = params.jurisdiction_id;
 
-  const [info, setInfo] = useState();
-  const [gisInfo, setGisInfo] = useState();
+  const [info, setInfo] = useState<JurisdictionInfo>();
+  const [gisInfo, setGisInfo] = useState<GisInfo>();
   const [isPending, setIsPending] = useState(true);
   const [error, setError] = useState(null);
 
@@ -148,7 +172,7 @@ export default function JurisdictionInfoForm() {
   const [jurisdictionCreatorOpen, setJurisdictionCreatorOpen] = useState(false);
 
   const [linkPreviewOpen, setLinkPreviewOpen] = useState(false);
-  const [linkPreview, setLinkPreview] = useState({ url: "", attachedField: null });
+  const [linkPreview, setLinkPreview] = useState({ url: "", fieldPath: null, attachedField: null });
   
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false);
 
@@ -616,8 +640,8 @@ export default function JurisdictionInfoForm() {
                                                           {/* URL verification error for online forms */}
                                                           { method.method === "online form" &&
                                                             submitCount > lastMethodAddSubmitCount &&
-                                                            Array.isArray(errors?.methods) &&
-                                                            Array.isArray(errors?.methods[idx]?.values) &&
+                                                            typeof errors.methods[idx] === "object" &&
+                                                            Array.isArray(errors.methods[idx].values) &&
                                                             errors.methods[idx].values.some(error => error.verified)
                                                             && (
                                                               <span className="text-red-500 text-xs font-bold ml-3 form-error-message">
