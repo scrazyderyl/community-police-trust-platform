@@ -1,4 +1,4 @@
-import { jurisidictionExists } from "@/services/JurisdictionGisService";
+import { jurisdictionExists } from "@/services/JurisdictionGisService";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -26,7 +26,7 @@ export async function POST(req) {
     // Automatically generate ID from name
     let id = name.toUpperCase().replaceAll(" ", "_");
     
-    return NextResponse.json(await jurisidictionExists(id));
+    return NextResponse.json(await jurisdictionExists(id));
   } catch (error) {
     return new NextResponse(null, { status: 500 });
   }

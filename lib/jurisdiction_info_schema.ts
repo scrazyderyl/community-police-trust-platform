@@ -122,9 +122,8 @@ export const VALIDATION_SCHEMA = Yup.object({
       })
       .noUnknown(true)
       .test("document-required-validation", null, function (document) {
-        const { path, options, parent } = this;
+        const { path, parent } = this;
         const index = parseInt(path.substring(path.lastIndexOf("[") + 1, path.lastIndexOf("]")));
-        console.log(index);
 
         // Check if any non-empty entries
         const allDocuments = parent;

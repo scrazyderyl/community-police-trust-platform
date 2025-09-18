@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { VALIDATION_SCHEMA } from "@/lib/jurisdiction_info_schema";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
-import { jurisidictionExists } from "@/services/JurisdictionGisService";
+import { jurisdictionExists } from "@/services/JurisdictionGisService";
 
 function processData(data) {
   // Remove empty entries and strip entries of verified field
@@ -53,7 +53,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId exists
-    if (!(await jurisidictionExists(jurisdictionId))) {
+    if (!(await jurisdictionExists(jurisdictionId))) {
       return new NextResponse(null, { status: 404 });
     }
   
@@ -74,7 +74,7 @@ export async function POST(req) {
     }
     
     // Additional check for defer field
-    if (data.defer != null && (!(await jurisidictionExists(data.defer.value)) || jurisdictionId === data.defer.value)) {
+    if (data.defer != null && (!(await jurisdictionExists(data.defer.value)) || jurisdictionId === data.defer.value)) {
       return new NextResponse(null, { status: 400 });
     }
     

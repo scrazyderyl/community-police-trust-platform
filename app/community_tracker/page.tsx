@@ -1,11 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import {
-  addRecord,
-  updateRecord,
-  getRecords,
-  deleteRecord,
-} from "@/services/FirestoreService";
 
 interface Counts {
   submitted: number;
@@ -21,7 +15,8 @@ const Community_tracker = () => {
   }, []);
 
   const fetchRecords = async () => {
-    const recordsData = await getRecords();
+    const req = await fetch("/api/records");
+    const recordsData = await req.json();
     summarizeRecords(recordsData);
   };
 

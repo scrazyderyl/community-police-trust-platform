@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { getJurisdictionById } from "@/services/JurisdictionGisService";
+import { getJurisdictionGis } from "@/lib/jurisdiction";
 
 function getDefaultComplaintInfo() {
   return {
@@ -23,7 +23,7 @@ export async function GET(req) {
     }
 
     // Check if the id exists
-    const gis_info = await getJurisdictionById(jurisdictionId);
+    const gis_info = await getJurisdictionGis(jurisdictionId);
 
     if (!gis_info) {
       return new NextResponse(null, { status: 404 });
@@ -47,7 +47,7 @@ export async function GET(req) {
     }
 
     if (info.defer) {
-      let deferJurisdiction = await getJurisdictionById(info.defer);
+      let deferJurisdiction = await getJurisdictionGis(info.defer);
 
       info.defer = {
         value: info.defer,

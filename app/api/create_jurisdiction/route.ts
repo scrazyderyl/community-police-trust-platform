@@ -1,5 +1,38 @@
-import { addNewJurisdiction } from "@/services/JurisdictionGisService";
+import { db } from '@/firebaseConfig';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { NextResponse } from "next/server";
+
+export async function addNewJurisdiction(id, name) {
+  try {
+    const docRef = doc(db, "jurisdiction_gis", "index");
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return false;
+    }
+
+    const data = docSnap.data();
+
+    // Don't overwrite if id exists
+    if (id in data) {
+      return false;
+    }
+
+    // Add to object
+    data[id] = {
+      name: name
+    };
+
+    // Add entry to Firebase
+    await updateDoc(docRef, {
+      [id]: { name: name }
+    });
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 export async function POST(req) {
   try {

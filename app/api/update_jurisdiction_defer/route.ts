@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebaseConfig";
 import { doc, getDoc, collection, addDoc, updateDoc, setDoc } from "firebase/firestore";
-import { jurisidictionExists } from "@/services/JurisdictionGisService";
+import { jurisdictionExists } from "@/services/JurisdictionGisService";
 
 export async function POST(req) {
   try {
@@ -14,7 +14,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId is valid
-    if (!(await jurisidictionExists(jurisdictionId))) {
+    if (!(await jurisdictionExists(jurisdictionId))) {
       return new NextResponse(null, { status: 404 }); 
     }
     
@@ -28,7 +28,7 @@ export async function POST(req) {
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && (!(await jurisidictionExists(deferJurisdictionId)) || jurisdictionId === deferJurisdictionId)) {
+    if (deferJurisdictionId != null && (!(await jurisdictionExists(deferJurisdictionId)) || jurisdictionId === deferJurisdictionId)) {
       return new NextResponse(null, { status: 400 });
     }
 

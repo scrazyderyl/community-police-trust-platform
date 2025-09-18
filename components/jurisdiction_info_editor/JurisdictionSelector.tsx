@@ -1,3 +1,4 @@
+import { findJurisdictionsByName } from "@/services/JurisdictionGisService";
 import { useCallback, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 
@@ -17,16 +18,7 @@ export default function JurisdictionSelector({
   const loadOptions = useCallback(
     async (inputValue: string) => {
       try {
-        const res = exclude ?
-          await fetch(`/api/search_jurisdiction?q=${encodeURIComponent(inputValue)}&exclude=${exclude}`) :
-          await fetch(`/api/search_jurisdiction?q=${encodeURIComponent(inputValue)}`);
-
-        if (!res.ok) {
-          return [];
-        }
-
-        const data = await res.json();
-        return data;
+        return await findJurisdictionsByName(inputValue, exclude);
       } catch {
         return [];
       }
@@ -37,13 +29,8 @@ export default function JurisdictionSelector({
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const res = await fetch("/api/search_jurisdiction?q=");
-
-        if (res.ok) {
-          const data = await res.json();
-
-          setDefaultOptions(data)
-        }
+        const data = await findJurisdictionsByName("", exclude);
+        setDefaultOptions(data);
       } catch {
 
       }

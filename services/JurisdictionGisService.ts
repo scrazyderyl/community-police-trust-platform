@@ -1,26 +1,23 @@
-import { db } from '@/firebaseConfig';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import Fuse from 'fuse.js';
+
+interface GisEntry {
+  name: string;
+}
 
 async function getAllData() {
   try {
-    const docRef = doc(db, "jurisdiction_gis", "index");
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data();
-    } else {
-      return null;
-    }
+    const req = await fetch("/api/get_gis_index");
+    
+    return req.json();
   } catch (error) {
     return null;
   }
 }
 
-export async function findJurisdictionsByName(query, exclude) {
+export async function findJurisdictionsByName(query, exclude?) {
   try {
     const data = await getAllData();
-    const jurisdictions = Object.entries(data).map(([id, v]) => ({ id, name: v.name }));
+    const jurisdictions = Object.entries(data).map(([id, v]: [string, GisEntry]) => ({ id, name: v.name }));
     let results;
 
     // Show all entries if query is empty
@@ -59,48 +56,11 @@ export async function findJurisdictionsByName(query, exclude) {
   }
 }
 
-export async function getJurisdictionById(id) {
-  try {
-    const data = await getAllData();
-
-    return data[id];
-  } catch (error) {
-    return undefined;
-  }
-}
-
-export async function jurisidictionExists(id) {
+export async function jurisdictionExists(id) {
   try {
     const data = await getAllData();
 
     return id in data;
-  } catch (error) {
-    return false;
-  }
-}
-
-export async function addNewJurisdiction(id, name) {
-  try {
-    const data = await getAllData();
-
-    // Don't overwrite if id exists
-    if (id in data) {
-      return false;
-    }
-
-    // Add to object
-    data[id] = {
-      name: name
-    };
-
-    // Add entry to Firebase
-    const docRef = doc(db, "jurisdiction_gis", "index");
-
-    await updateDoc(docRef, {
-      [id]: { name: name }
-    });
-
-    return true;
   } catch (error) {
     return false;
   }

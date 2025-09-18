@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Popup, useMap, useMapEvents } from "react-leaf
 import { Map as LeafletMapType } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { geocodeAddress, reverseGeocode, findMunicipalityByAddress } from "@/services/GeoService";
+import { geocodeAddress, reverseGeocode, findMunicipalityByName } from "@/services/GeoService";
 import SearchSection from "./SearchSection";
 import InfoModal from "./InfoModal";
 
@@ -72,7 +72,7 @@ function MapViewer() {
           data.address.town || data.address.neighbourhood || data.address.village || "";
 
         const results = municipalityName
-          ? await findMunicipalityByAddress(municipalityName)
+          ? await findMunicipalityByName(municipalityName)
           : [];
 
         const filingInfoNode =
