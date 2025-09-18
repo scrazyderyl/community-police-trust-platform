@@ -2,7 +2,7 @@ import { db } from '@/firebaseConfig';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { NextResponse } from "next/server";
 
-export async function addNewJurisdiction(id, name) {
+async function addNewJurisdiction(id, name) {
   try {
     const docRef = doc(db, "jurisdiction_gis", "index");
     const docSnap = await getDoc(docRef);

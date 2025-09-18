@@ -1,7 +1,7 @@
 // File: /components/map/SearchSection.tsx
 "use client";
 import React from "react";
-import Search_bar from "@/components/Search_bar";
+import Search_bar from "@/components/map/Search_bar";
 
 const SearchSection = ({
   onSearch,
