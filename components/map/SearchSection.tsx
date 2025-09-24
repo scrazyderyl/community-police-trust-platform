@@ -37,7 +37,7 @@ const SearchSection = ({
       {/* "?" Button */}
       <button
         className="bg-blue-500 text-white mt-5 rounded-full flex items-center justify-center 
-         w-7 h-7 min-w-7 min-h-7 text-lg font-bold text-gray-700 hover:bg-gray-400 flex-shrink-0"
+         w-7 h-7 min-w-7 min-h-7 text-lg font-bold hover:bg-gray-400 flex-shrink-0"
         onClick={onInfoClick}
       >
         ?

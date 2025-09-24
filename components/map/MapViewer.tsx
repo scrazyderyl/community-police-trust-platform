@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { geocodeAddress, reverseGeocode, findMunicipalityByName } from "@/services/GeoService";
 import SearchSection from "./SearchSection";
 import InfoModal from "./InfoModal";
+import CoordinateInfoModal from "./CoordinateInfoModal";
 
 type SelectedLocation = {
   lat: number;
@@ -57,9 +58,10 @@ function MapViewer() {
       }
 
       try {
-        const data = await reverseGeocode(lat, lng);
+        // Reverse geocode
+        const gisData = await reverseGeocode(lat, lng);
 
-        if (!data) {
+        if (!gisData) {
           setSelected({
             lat,
             lng,
@@ -68,46 +70,18 @@ function MapViewer() {
           return;
         }
 
+        // Find jurisdiction data
         const municipalityName =
-          data.address.town || data.address.neighbourhood || data.address.village || "";
+          gisData.address.town || gisData.address.neighbourhood || gisData.address.village || "";
 
-        const results = municipalityName
-          ? await findMunicipalityByName(municipalityName)
-          : [];
-
-        const filingInfoNode =
-          results && results.length > 0 ? (
-            <div>
-              {results.map((r, i) => (
-                <div key={i}>
-                  <strong>{r.name}:</strong> {r.filing_info}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div>No Record Found</div>
-          );
-
-        const contentNode = (
-          <div className="w-64 max-w-[400px] whitespace-normal">
-            <strong>Location Details</strong>
-            <br />
-            {data.display_name || "Address not found"}
-            <br />
-            <strong>ZIP Code:</strong> {data.address.postcode || "N/A"}
-            <div className="mt-2">
-              <strong>Nearby Municipalities:</strong>
-            </div>
-            <div className="max-h-24 overflow-y-auto border border-gray-300 p-1 mt-1">
-              {filingInfoNode}
-            </div>
-          </div>
-        );
+        const jurisdictionInfo = await findMunicipalityByName(municipalityName)
 
         setSelected({
           lat,
           lng,
-          content: contentNode,
+          content: (
+            <CoordinateInfoModal gisData={gisData} jurisdictionInfo={jurisdictionInfo} />
+          ),
         });
       } catch (err) {
         console.error("Error fetching info by coordinates:", err);

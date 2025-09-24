@@ -16,7 +16,7 @@ import Modal from "@/components/Modal";
 import LinkVerificationButton from "@/components/jurisdiction_info_editor/LinkVerificationButton";
 import JurisdicionCreationForm from "../../../components/jurisdiction_info_editor/JurisdictionCreationForm";
 
-interface JurisdictionInfo {
+export interface JurisdictionFilingInfo {
   name?: string;
   documents: DocumentInfo[];
   methods: MethodInfo[];
@@ -111,7 +111,7 @@ export default function JurisdictionInfoForm() {
   const params = useParams();
   const jurisdictionId = params.jurisdiction_id;
 
-  const [info, setInfo] = useState<JurisdictionInfo>();
+  const [info, setInfo] = useState<JurisdictionFilingInfo>();
   const [gisInfo, setGisInfo] = useState<GisInfo>();
   const [isPending, setIsPending] = useState(true);
   const [error, setError] = useState(null);
