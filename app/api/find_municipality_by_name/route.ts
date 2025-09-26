@@ -1,6 +1,5 @@
 import { db } from "@/firebaseConfig";
 import { getAllGisData } from "@/lib/jurisdiction";
-import { doc, getDoc } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -34,10 +33,10 @@ export async function GET(req) {
     }
 
     // Fetch the jurisdiction_info document for the matched key
-    const infoRef = doc(db, "jurisdiction_info", matchedKey);
-    const infoSnap = await getDoc(infoRef);
+    const infoRef = db.doc(`jurisdiction_info/${matchedKey}`);
+    const infoSnap = await infoRef.get()
 
-    if (!infoSnap.exists()) {
+    if (!infoSnap.exists) {
       return new NextResponse(null, { status: 404 });
     }
 

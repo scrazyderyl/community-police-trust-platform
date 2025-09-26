@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { VALIDATION_SCHEMA } from "@/lib/editor_feedback_schema";
 import { db } from "@/firebaseConfig";
-import { addDoc, collection } from "firebase/firestore";
 
 export async function POST(req) {
   try {
@@ -23,8 +22,8 @@ export async function POST(req) {
 
     // Add to database
     try {
-        const colRef = collection(db, "feedback");
-        await addDoc(colRef, data);
+        const colRef = db.collection("feedback");
+        await colRef.add(data);
 
         return new NextResponse(null, { status: 200 });
     } catch (error) {

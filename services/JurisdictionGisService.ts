@@ -55,13 +55,3 @@ export async function findJurisdictionsByName(query, exclude?) {
     return null;
   }
 }
-
-export async function jurisdictionExists(id) {
-  try {
-    const data = await getAllData();
-
-    return id in data;
-  } catch (error) {
-    return false;
-  }
-}

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
 import { getJurisdictionGis } from "@/lib/jurisdiction";
 
 function getDefaultComplaintInfo() {
@@ -33,10 +32,10 @@ export async function GET(req) {
     let info;
 
     try {
-      const docRef = doc(db, "jurisdiction_info", jurisdictionId);
-      const docSnap = await getDoc(docRef);
+      const docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+      const docSnap = await docRef.get();
 
-      if (docSnap.exists()) {
+      if (docSnap.exists) {
         info = docSnap.data();
       } else {
         info = getDefaultComplaintInfo();

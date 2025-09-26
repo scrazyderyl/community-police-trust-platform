@@ -2,7 +2,6 @@ import { VALIDATION_SCHEMA as STANDARD_ACCOUNT_VALIDATION_SCHEMA } from '@/lib/s
 import { VALIDATION_SCHEMA as CODE_ACCOUNT_VALIDATION_SCHEMA } from '@/lib/code_account_schema';
 import { NextResponse } from 'next/server';
 import { auth, db } from '@/firebaseConfig';
-import { signInWithCustomToken } from 'firebase/auth';
 
 async function createStandardAccount(data) {
   if (!await STANDARD_ACCOUNT_VALIDATION_SCHEMA.isValid(data)) {

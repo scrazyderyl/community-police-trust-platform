@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { VALIDATION_SCHEMA } from "@/lib/jurisdiction_info_schema";
 import { db } from "@/firebaseConfig";
-import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
-import { jurisdictionExists } from "@/services/JurisdictionGisService";
+import { doesJurisdictionExist } from "@/lib/jurisdiction";
 
 function processData(data) {
   // Remove empty entries and strip entries of verified field
@@ -53,7 +52,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId exists
-    if (!(await jurisdictionExists(jurisdictionId))) {
+    if (!(await doesJurisdictionExist(jurisdictionId))) {
       return new NextResponse(null, { status: 404 });
     }
   
@@ -74,7 +73,7 @@ export async function POST(req) {
     }
     
     // Additional check for defer field
-    if (data.defer != null && (!(await jurisdictionExists(data.defer.value)) || jurisdictionId === data.defer.value)) {
+    if (data.defer != null && (!(await doesJurisdictionExist(data.defer.value)) || jurisdictionId === data.defer.value)) {
       return new NextResponse(null, { status: 400 });
     }
     
@@ -83,13 +82,13 @@ export async function POST(req) {
 
     // Move existing data to history
     try {
-      const docRef = doc(db, "jurisdiction_info", jurisdictionId);
-      const docSnap = await getDoc(docRef);
+      const docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+      const docSnap = await docRef.get();
 
-      if (docSnap.exists()) {
+      if (docSnap.exists) {
         const currentData = docSnap.data();
-        const colRef = collection(db, "revisions", jurisdictionId, "versions");
-        await addDoc(colRef, currentData);
+        const colRef = db.collection(`revisions/${jurisdictionId}/versions`);
+        await colRef.add(currentData);
       }
     } catch (error) {
       // Assume not found
@@ -97,8 +96,8 @@ export async function POST(req) {
   
     // Update database
     try {
-      const docRef = doc(db, "jurisdiction_info", jurisdictionId);
-      await setDoc(docRef, data);
+      const docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+      await docRef.set(data);
       
       return new NextResponse(null, { status: 200 });
     } catch (error) {

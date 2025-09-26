@@ -1,13 +1,12 @@
 import { db } from '@/firebaseConfig';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { NextResponse } from "next/server";
 
 async function addNewJurisdiction(id, name) {
   try {
-    const docRef = doc(db, "jurisdiction_gis", "index");
-    const docSnap = await getDoc(docRef);
+    const docRef = db.doc("jurisdiction_gis/index");
+    const docSnap = await docRef.get();
     
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return false;
     }
 
@@ -24,7 +23,7 @@ async function addNewJurisdiction(id, name) {
     };
 
     // Add entry to Firebase
-    await updateDoc(docRef, {
+    await docRef.update({
       [id]: { name: name }
     });
 

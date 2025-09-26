@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/firebaseConfig";
-import { doc, getDoc, collection, addDoc, updateDoc, setDoc } from "firebase/firestore";
-import { jurisdictionExists } from "@/services/JurisdictionGisService";
+import { doesJurisdictionExist } from "@/lib/jurisdiction";
 
 export async function POST(req) {
   try {
@@ -14,7 +13,7 @@ export async function POST(req) {
     }
 
     // Check if jurisdictionId is valid
-    if (!(await jurisdictionExists(jurisdictionId))) {
+    if (!(await doesJurisdictionExist(jurisdictionId))) {
       return new NextResponse(null, { status: 404 }); 
     }
     
@@ -28,22 +27,21 @@ export async function POST(req) {
     }
     
     // Ensure defer jurisdiction id is valid
-    if (deferJurisdictionId != null && (!(await jurisdictionExists(deferJurisdictionId)) || jurisdictionId === deferJurisdictionId)) {
+    if (deferJurisdictionId != null && (!(await doesJurisdictionExist(deferJurisdictionId)) || jurisdictionId === deferJurisdictionId)) {
       return new NextResponse(null, { status: 400 });
     }
 
     // Move existing data to history
-    let docRef;
+    let docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
     let docFound = false;
 
     try {
-      docRef = doc(db, "jurisdiction_info", jurisdictionId);
-      const docSnap = await getDoc(docRef);
+      const docSnap = await docRef.get();
 
-      if (docSnap.exists()) {
+      if (docSnap.exists) {
         const currentData = docSnap.data();
-        const colRef = collection(db, "revisions", jurisdictionId, "versions");
-        await addDoc(colRef, currentData);
+        const colRef = db.collection(`revisions/${jurisdictionId}/versions`);
+        await colRef.add(currentData);
         docFound = true;
       }
     } catch (error) {
@@ -53,13 +51,13 @@ export async function POST(req) {
     try {
       if (docFound) {
         // Update document
-        await updateDoc(docRef, {
+        await docRef.update({
           last_updated: new Date().toISOString(),
           defer: deferJurisdictionId
         });
       } else {
         // Create new doucment
-        await setDoc(docRef, {
+        docRef.set({
           last_updated: new Date().toISOString(),
           defer: deferJurisdictionId,
           methods: [],
