@@ -71,7 +71,7 @@ export default function CodeAccountForm({ onAccountCreated }) {
   return (
     <Formik
       enableReinitialize
-      initialValues={{ code: '', answers: [] }}
+      initialValues={{ code: '', answers: ['', '', ''] }}
       validationSchema={VALIDATION_SCHEMA}
       onSubmit={async (values, { resetForm }) => {
         try {

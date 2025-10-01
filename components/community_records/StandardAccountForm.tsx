@@ -4,7 +4,7 @@ import { VALIDATION_SCHEMA } from '@/lib/standard_account_schema';
 export default function StandardAccountForm({ onAccountCreated }) {
   return (
     <Formik
-      initialValues={{ username: '', password: '' }}
+      initialValues={{ identifier: '', password: '' }}
       validationSchema={VALIDATION_SCHEMA}
       onSubmit={async (values, { resetForm }) => {
         try {
@@ -32,13 +32,13 @@ export default function StandardAccountForm({ onAccountCreated }) {
             <label className="block mb-1 font-medium">Username or Email</label>
             <Field
               type="text"
-              name="username"
+              name="identifier"
               className="w-full border border-gray-300 rounded px-3 py-2"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
             />
-            <ErrorMessage name="username" component="div" className="text-red-600 text-sm mt-1" />
+            <ErrorMessage name="identifier" component="div" className="text-red-600 text-sm mt-1" />
           </div>
 
           <div>

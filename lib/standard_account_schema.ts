@@ -1,25 +1,28 @@
 import * as Yup from 'yup';
+import { isValidEmail, isValidPassord, isValidUsername } from './validation_rules';
 
 export const VALIDATION_SCHEMA = Yup.object({
-  username: Yup.string()
+  identifier: Yup.string()
+    .required("Required")
     .test(
       'username-or-email',
       function (value) {
         const { path, createError } = this;
+        
+        value = value.trim();
 
-        // Required
         if (!value) {
           return createError({ path, message: 'Required' });
         }
 
         if (value.includes('@')) {
           // Validate as email
-          if (!Yup.string().email().isValidSync(value)) {
+          if (!isValidEmail(value)) {
             return createError({ path, message: 'Must be a valid email address' });
           }
         } else {
           // Validate as username
-          if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+          if (!isValidUsername(value)) {
             return createError({ path, message: 'Username can only contain letters, numbers, and underscores' });
           }
         }
@@ -28,6 +31,6 @@ export const VALIDATION_SCHEMA = Yup.object({
       }
     ),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('Required'),
+    .required('Required')
+    .test('password', "Password must be at least 15 characters in length", isValidPassord)
 }).noUnknown();
