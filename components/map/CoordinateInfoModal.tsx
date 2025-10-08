@@ -1,4 +1,5 @@
 "use client";
+import parsePhoneNumber from 'libphonenumber-js'
 import { JurisdictionFilingInfo } from "@/app/editor/[jurisdiction_id]/page";
 import React from "react";
 
@@ -54,7 +55,7 @@ const METHOD_METADATA: Record<string, MethodMetadata> = {
 
 export default function CoordinateInfoModal({ gisData, jurisdictionInfo }: CoordinateInfoModalProps) {
   return (
-    <div className="inline">
+    <div>
       {/* Jurisdiction name */}
       <div className="mt-2 text-base">
         {jurisdictionInfo ? (
@@ -65,7 +66,9 @@ export default function CoordinateInfoModal({ gisData, jurisdictionInfo }: Coord
       </div>
 
       {/* Address */}
-      <div className="mt-2">
+      <div className="mt-2" style={{
+        overflowWrap: "anywhere"
+      }}>
         <span className="font-bold">Address: </span>
         {gisData ? (
           gisData.display_name
@@ -74,7 +77,7 @@ export default function CoordinateInfoModal({ gisData, jurisdictionInfo }: Coord
         )}
       </div>
 
-      {jurisdictionInfo && (
+      {jurisdictionInfo && (jurisdictionInfo.info ? (
         <>
           {/* Methods summary */}
           {jurisdictionInfo.info.methods.length > 0 && (
@@ -95,11 +98,14 @@ export default function CoordinateInfoModal({ gisData, jurisdictionInfo }: Coord
                           </div>
                         ))
                       ) : (
-                        m.values.map((value: string, vi: number) => (
+                        m.values.map((value: string, vi: number) => {
+                          return (
                           <div key={vi} className="mt-1">
-                            <a href={method_metadata.urlPrefix + value}>{value}</a>
+                            <a href={method_metadata.urlPrefix + value} style={{
+                              overflowWrap: "anywhere"
+                            }}>{m.method === "phone" ? parsePhoneNumber(`+${value}`)?.formatNational() : value}</a>
                           </div>
-                        ))
+                        )})
                       )}
                     </div>
                   </div>
@@ -112,17 +118,21 @@ export default function CoordinateInfoModal({ gisData, jurisdictionInfo }: Coord
           {jurisdictionInfo.info.documents.length > 0 && (
             <div className="mt-2">
               <div className="font-bold text-sm">Documents</div>
-                {jurisdictionInfo.info.documents.map((d: any, i: number) => (
-                  <div key={i} className="mt-1 mb-1">
-                    <a href={d.url} target="_blank" rel="noreferrer">
-                      {d.name}
-                    </a>
-                  </div>
-                ))}
-              </div>
+              {jurisdictionInfo.info.documents.map((d: any, i: number) => (
+                <div key={i} className="mt-1 mb-1">
+                  <a href={d.url} target="_blank" rel="noreferrer" style={{
+                    overflowWrap: "anywhere"
+                  }}>
+                    {d.name}
+                  </a>
+                </div>
+              ))}
+            </div>
           )}
         </>
-      )}
+      ) : (
+        <div className="mt-2 font-bold text-base">No filing information found. <a href={`/editor/${jurisdictionInfo.id}`}>Contribute</a></div>
+      ))}
     </div>
   );
 }

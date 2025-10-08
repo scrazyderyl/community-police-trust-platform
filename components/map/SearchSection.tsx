@@ -6,6 +6,7 @@ import Search_bar from "@/components/map/Search_bar";
 const SearchSection = ({
   onSearch,
   onSuggestionsFetch,
+  onSuggestionClick,
   onLocateClick,
   onInfoClick,
 }) => {
@@ -14,16 +15,13 @@ const SearchSection = ({
       <div className="w-full">
         <Search_bar
           show_map_btn={false}
-          onSearch={(value) => {
-            console.log("Search Value:", value);
-            onSearch(value);
-          }}
+          onSearch={onSearch}
           onSuggestionsFetch={(query) =>
             onSuggestionsFetch(query).then((suggestions) => {
-              console.log("Suggestions:", suggestions);
               return suggestions;
             })
           }
+          onSuggestionClick={onSuggestionClick}
         />
       </div>
       <button

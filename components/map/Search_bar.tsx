@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { Suggestion } from "./MapViewer";
 
-const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
+const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch, onSuggestionClick }) => {
   const [input, setInput] = useState(""); // Manage input state
-  const [suggestions, setSuggestions] = useState([]); // Manage suggestions state
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]); // Manage suggestions state
   const [loading, setLoading] = useState(false);
 
   const searchInputRef = useRef(null);
@@ -81,8 +82,8 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
   const handleSuggestionClick = (suggestion) => {
     setInput(suggestion.label); // Update input with the selected suggestion
     setSuggestions([]); // Clear suggestions
-    if (onSearch) {
-      onSearch(suggestion.label); // Trigger search with the selected suggestion
+    if (onSuggestionClick) {
+      onSuggestionClick(suggestion); // Trigger search with the selected suggestion
     }
   };
 
@@ -144,7 +145,7 @@ const Search_bar = ({ show_map_btn = true, onSearch, onSuggestionsFetch }) => {
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
-                {suggestion.label}
+                {suggestion.display_name}
               </li>
             ))}
           </ul>

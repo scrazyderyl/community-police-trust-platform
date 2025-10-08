@@ -4,22 +4,33 @@ import { MapContainer, TileLayer, Popup, useMap, useMapEvents } from "react-leaf
 import { Map as LeafletMapType } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { geocodeAddress, reverseGeocode, findMunicipalityByName } from "@/services/GeoService";
+import { geocodeAddress, reverseGeocode, findJurisdictionByAddress } from "@/services/GeoService";
 import SearchSection from "./SearchSection";
 import InfoModal from "./InfoModal";
 import CoordinateInfoModal from "./CoordinateInfoModal";
 
-type SelectedLocation = {
+interface SelectedLocation {
   lat: number;
   lng: number;
   content: React.ReactNode;
 };
 
-type Suggestion = {
-  label: string;
-  position: { lat: number; lng: number };
-  boundingbox: [number, number, number, number]; // [south, north, west, east]
-};
+export interface Suggestion {
+  addresstype: string;
+  boundingbox: [string, string, string, string];
+  category: string;
+  display_name: string;
+  importance: number;
+  lat: string;
+  lon: string;
+  licence: string;
+  name: string;
+  osm_id: number;
+  osm_type: string;
+  place_id: number;
+  place_rank: number;
+  type: string;
+}
 
 const SetMapRef: React.FC<{ mapRef: React.RefObject<LeafletMapType> }> = ({ mapRef }) => {
   const map = useMap();
@@ -71,10 +82,7 @@ function MapViewer() {
         }
 
         // Find jurisdiction data
-        const municipalityName =
-          gisData.address.town || gisData.address.neighbourhood || gisData.address.village || "";
-
-        const jurisdictionInfo = await findMunicipalityByName(municipalityName)
+        const jurisdictionInfo = await findJurisdictionByAddress(gisData.address);
 
         setSelected({
           lat,
@@ -99,67 +107,61 @@ function MapViewer() {
     query = query.trim();
     if (!query) return [];
 
-    const results = await geocodeAddress(query);
+    const results = await geocodeAddress(query) as Suggestion[];
+    suggestionCacheRef.current = results ? results : [];
 
-    if (results) {
-      const suggestions: Suggestion[] = results.slice(0, 5).map((item) => ({
-        label: item.display_name,
-        position: { lat: Number(item.lat), lng: Number(item.lon) },
-        boundingbox: item.boundingbox.map(Number) as [number, number, number, number],
-      }));
-
-      suggestionCacheRef.current = suggestions;
-      return suggestions;
-    }
-
-    suggestionCacheRef.current = [];
-    return [];
+    return suggestionCacheRef.current;
   };
 
-  const handleSearch = useCallback(
-    async (query: string) => {
-      const trimmed = query.trim();
-      if (!trimmed) {
-        alert("Please enter a valid address.");
-        return;
-      }
+  const showSuggestionOnMap = async (suggestion: Suggestion) => {
+    const lat = Number.parseFloat(suggestion.lat);
+    const lng = Number.parseFloat(suggestion.lon);
+    const [south, north, west, east] = suggestion.boundingbox.map(Number);
 
-      let suggestions: Suggestion[];
-      try {
-        suggestions = await fetchSuggestions(trimmed);
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        alert("Error occurred during address search.");
-        return;
-      }
+    setSelected({
+      lat,
+      lng,
+      content: <div className="w-64">Loading...</div>,
+    });
+
+    if (mapRef.current) {
+      mapRef.current.fitBounds(
+        [
+          [south, west],
+          [north, east],
+        ]
+      );
+    }
+
+    showInfoForCoordinates(lat, lng, false);
+  }
+
+  const handleSearch = async (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      alert("Please enter a valid address.");
+      return;
+    }
+
+    try {
+      const suggestions = await fetchSuggestions(trimmed);
 
       if (suggestions && suggestions.length > 0) {
-        const first = suggestions[0];
-        const { lat, lng } = first.position;
-        const [south, north, west, east] = first.boundingbox;
-
-        setSelected({
-          lat,
-          lng,
-          content: <div className="w-64">Loading...</div>,
-        });
-
-        if (mapRef.current) {
-          mapRef.current.fitBounds(
-            [
-              [south, west],
-              [north, east],
-            ]
-          );
-        }
-
-        showInfoForCoordinates(lat, lng, false);
+        // Show first (most relevant) suggestion
+        showSuggestionOnMap(suggestions[0]);
       } else {
         alert("No results found for the entered address.");
       }
-    },
-    [showInfoForCoordinates]
-  );
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      alert("Error occurred during address search.");
+      return;
+    }
+  }
+
+  const onSuggestionClick = async (suggestion: Suggestion) => {
+    showSuggestionOnMap(suggestion);
+  }
 
   const locateUser = useCallback(() => {
     if (!navigator.geolocation) {
@@ -197,6 +199,7 @@ function MapViewer() {
           <SearchSection
             onSearch={handleSearch}
             onSuggestionsFetch={fetchSuggestions}
+            onSuggestionClick={onSuggestionClick}
             onLocateClick={locateUser}
             onInfoClick={() => setShowInfoCard(true)}
           />
