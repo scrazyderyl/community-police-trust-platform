@@ -4,10 +4,11 @@ import { MapContainer, TileLayer, Popup, useMap, useMapEvents } from "react-leaf
 import { Map as LeafletMapType } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import { geocodeAddress, reverseGeocode, findJurisdictionByAddress } from "@/services/GeoService";
+import { geocodeAddress, reverseGeocode, findJurisdictionByCoordinate } from "@/services/GeoService";
 import SearchSection from "./SearchSection";
 import InfoModal from "./InfoModal";
 import CoordinateInfoModal from "./CoordinateInfoModal";
+import polylabel from "polylabel";
 
 interface SelectedLocation {
   lat: number;
@@ -20,6 +21,10 @@ export interface Suggestion {
   boundingbox: [string, string, string, string];
   category: string;
   display_name: string;
+  geojson: {
+    coordinates: [[[number]]];
+    type: string;
+  };
   importance: number;
   lat: string;
   lon: string;
@@ -56,52 +61,49 @@ function MapViewer() {
   const [selected, setSelected] = useState<SelectedLocation | null>(null);
   const [showInfoCard, setShowInfoCard] = useState(false);
 
-  const showInfoForCoordinates = useCallback(
-    async (lat: number, lng: number, recenter: boolean) => {
+  const showInfoForCoordinates = async (lat: number, lng: number, recenter: boolean) => {
+    setSelected({
+      lat,
+      lng,
+      content: <div className="w-64">Loading...</div>,
+    });
+
+    if (recenter && mapRef.current) {
+      mapRef.current.setView([lat, lng], 14);
+    }
+
+    try {
+      // Reverse geocode
+      const gisData = await reverseGeocode(lat, lng);
+
+      if (!gisData) {
+        setSelected({
+          lat,
+          lng,
+          content: <div className="w-64">Address not found</div>,
+        });
+        return;
+      }
+
+      // Find jurisdiction data
+      const jurisdictionInfo = await findJurisdictionByCoordinate(lat, lng);
+
       setSelected({
         lat,
         lng,
-        content: <div className="w-64">Loading...</div>,
+        content: (
+          <CoordinateInfoModal gisData={gisData} jurisdictionInfo={jurisdictionInfo} />
+        ),
       });
-
-      if (recenter && mapRef.current) {
-        mapRef.current.setView([lat, lng], 14);
-      }
-
-      try {
-        // Reverse geocode
-        const gisData = await reverseGeocode(lat, lng);
-
-        if (!gisData) {
-          setSelected({
-            lat,
-            lng,
-            content: <div className="w-64">Address not found</div>,
-          });
-          return;
-        }
-
-        // Find jurisdiction data
-        const jurisdictionInfo = await findJurisdictionByAddress(gisData.address);
-
-        setSelected({
-          lat,
-          lng,
-          content: (
-            <CoordinateInfoModal gisData={gisData} jurisdictionInfo={jurisdictionInfo} />
-          ),
-        });
-      } catch (err) {
-        console.error("Error fetching info by coordinates:", err);
-        setSelected({
-          lat,
-          lng,
-          content: <div className="w-64">Error fetching data</div>,
-        });
-      }
-    },
-    []
-  );
+    } catch (err) {
+      console.error("Error fetching info by coordinates:", err);
+      setSelected({
+        lat,
+        lng,
+        content: <div className="w-64">Error fetching data</div>,
+      });
+    }
+  }
 
   const fetchSuggestions = async (query: string): Promise<Suggestion[]> => {
     query = query.trim();
@@ -114,8 +116,8 @@ function MapViewer() {
   };
 
   const showSuggestionOnMap = async (suggestion: Suggestion) => {
-    const lat = Number.parseFloat(suggestion.lat);
-    const lng = Number.parseFloat(suggestion.lon);
+    const point = polylabel(suggestion.geojson.coordinates, 0.000001); // Find pole of inaccessibility
+    const [lng, lat] = point;
     const [south, north, west, east] = suggestion.boundingbox.map(Number);
 
     setSelected({

@@ -32,7 +32,7 @@ export async function POST(req) {
     }
 
     // Move existing data to history
-    let docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+    let docRef = db.doc(`filiing_info/${jurisdictionId}`);
     let docFound = false;
 
     try {

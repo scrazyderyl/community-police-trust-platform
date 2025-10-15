@@ -2,7 +2,7 @@ import { db } from '@/firebaseConfig';
 
 export async function getAllGisData() {
   try {
-    const docRef = db.doc("jurisdiction_gis/index");
+    const docRef = db.doc("gis/index");
     const docSnap = await docRef.get();
     
     return docSnap.data();

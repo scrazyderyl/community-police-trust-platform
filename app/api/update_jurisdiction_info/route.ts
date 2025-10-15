@@ -82,7 +82,7 @@ export async function POST(req) {
 
     // Move existing data to history
     try {
-      const docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+      const docRef = db.doc(`filiing_info/${jurisdictionId}`);
       const docSnap = await docRef.get();
 
       if (docSnap.exists) {
@@ -96,7 +96,7 @@ export async function POST(req) {
   
     // Update database
     try {
-      const docRef = db.doc(`jurisdiction_info/${jurisdictionId}`);
+      const docRef = db.doc(`filiing_info/${jurisdictionId}`);
       await docRef.set(data);
       
       return new NextResponse(null, { status: 200 });
