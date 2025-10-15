@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import { booleanPointInPolygon } from "@turf/turf";
 import { db } from "@/firebaseConfig";
 import { getAllGisData } from "@/lib/jurisdiction";
+import geojson from "@/lib/gis/AlleghenyCountyMunicipalBoundaries_6404275282653601599.json";
 
 async function getJurisdictionName(id) {
   const index = await getAllGisData();
@@ -35,8 +36,7 @@ export async function GET(req) {
   }
 
   // Find jurisdictions that contain the coordinate
-  const geojson = JSON.parse(await fs.readFile(process.cwd() + '/lib/gis/AlleghenyCountyMunicipalBoundaries_6404275282653601599.geojson', 'utf8'));
-  const intersections = geojson.features.filter(f => booleanPointInPolygon(point, f));
+  const intersections = geojson["features"].filter(f => booleanPointInPolygon(point, f));
 
   if (intersections.length == 0) {
     return new NextResponse(null, { status: 404 });
