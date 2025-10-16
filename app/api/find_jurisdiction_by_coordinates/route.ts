@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from 'fs';
 import { booleanPointInPolygon } from "@turf/turf";
 import { db } from "@/firebaseConfig";
 import { getAllGisData } from "@/lib/jurisdiction";
-import geojson from "@/lib/gis/AlleghenyCountyMunicipalBoundaries_6404275282653601599.json";
+import type { FeatureCollection, Polygon, MultiPolygon } from "geojson";
+import jurisdictionBoundsJson from "@/lib/gis/AlleghenyCountyMunicipalBoundaries_6404275282653601599.json";
+
+const jurisdictionBounds: FeatureCollection<Polygon | MultiPolygon> = jurisdictionBoundsJson as FeatureCollection<Polygon | MultiPolygon>;
 
 async function getJurisdictionName(id) {
   const index = await getAllGisData();
@@ -36,7 +38,7 @@ export async function GET(req) {
   }
 
   // Find jurisdictions that contain the coordinate
-  const intersections = geojson["features"].filter(f => booleanPointInPolygon(point, f));
+  const intersections = jurisdictionBounds.features.filter(f => booleanPointInPolygon(point, f));
 
   if (intersections.length == 0) {
     return new NextResponse(null, { status: 404 });
