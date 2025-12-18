@@ -15,7 +15,7 @@ export type ComplaintRecord = {
     title: string,
     details: string,
   }[],
-  resolution: {
+  resolution?: {
     date?: string,
     details?: string,
     satisfaction: number,

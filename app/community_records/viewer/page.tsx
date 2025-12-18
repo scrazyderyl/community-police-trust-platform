@@ -81,7 +81,7 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
   onRangeChange,
 }) => {
   const options = [
-    { value: 'all', label: 'All Time' },
+    { value: '0', label: 'All Time' },
     { value: '6', label: 'Last 6 Months' },
     { value: '12', label: 'Last 12 Months' },
     { value: '18', label: 'Last 18 Months' },
@@ -108,21 +108,6 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
   );
 };
 
-const Legend: React.FC<LegendProps> = ({ colors }) => (
-  <div className="flex space-x-4 mt-4">
-    {Object.entries(colors).map(([key, color]) => (
-      <div key={key} className="flex items-center space-x-1">
-        <div style={{ backgroundColor: color }} className="w-4 h-4"></div>
-        <span className="text-sm">{key}</span>
-      </div>
-    ))}
-  </div>
-);
-
-const colorScale = d3.scaleOrdinal()
-  .domain(["submitted", "inProgress", "addressed"])
-  .range(["#f56565", "#ed8936", "#48bb78"]);
-
 const Community_tracker = () => {
   const [records, setRecords] = useState<ComplaintRecord[]>([]);
   const [gisIndex, setGisIndex] = useState<Record<string, { name: string }>>({});
@@ -130,7 +115,7 @@ const Community_tracker = () => {
   const [openLocationDetails, setOpenLocationDetails] = useState<string | null>(null);
 
   const [selectedLocations, setSelectedLocations] = useState<{ value: string; label: string }[]>([]);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('all');
+  const [selectedTimeRange, setSelectedTimeRange] = useState('0');
 
   const [loading, setLoading] = useState(true);
 
@@ -144,7 +129,7 @@ const Community_tracker = () => {
       filtered = filtered.filter(record => locationIds.has(record.jurisdiction.value));
     }
 
-    if (selectedTimeRange !== 'all') {
+    if (selectedTimeRange !== '0') {
       filtered = filtered.filter(record => {
         const recordDate = new Date(record.when);
         const now = new Date();
@@ -239,15 +224,10 @@ const Community_tracker = () => {
         )
       );
 
-      // Sort by date
-      finalLineData.sort((a, b) => a.date.getTime() - b.date.getTime());
-
-      console.log(finalLineData);
-
       drawLineChartByLocationAndStatus({
         selector: "#linechart",
         data: finalLineData,
-        locations: selectedLocations.map(loc => loc.value)
+        monthsShown: parseInt(selectedTimeRange)
       });
     } else {
       d3.select("#linechart")
@@ -361,7 +341,7 @@ const Community_tracker = () => {
           </tbody>
         </table>
 
-        <div id="chart" className="mt-12 bg-white shadow-md p-4 rounded-md"></div>
+        <div id="chart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto"></div>
 
         <div className="mt-4 max-w-md mx-auto">
           <label className="block text-sm font-medium text-gray-700 mb-2 align=middle">
@@ -382,7 +362,7 @@ const Community_tracker = () => {
           />
         </div>
 
-        <div id="linechart" className="mt-12 bg-white shadow-md p-4 rounded-md"></div>
+        <div id="linechart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto"></div>
       </div>
       <br />
     </div>

@@ -1,8 +1,9 @@
+import { getRelativeDateMonths } from "@/lib/util/date";
 import * as d3 from "d3";
+import { pixelAlignedTicks } from "./util";
 
 interface LineDataByLocationAndStatus {
   date: Date;
-  location: string;
   status: string;
   value: number;
 }
@@ -10,15 +11,16 @@ interface LineDataByLocationAndStatus {
 interface LineChartByLocationAndStatusProps {
   selector: string;
   data: LineDataByLocationAndStatus[];
-  locations: string[];
+  monthsShown: number;
   width?: number;
   height?: number;
 }
 
+
 export function drawLineChartByLocationAndStatus({
   selector,
   data,
-  locations,
+  monthsShown: monthsFilter,
   width = 1000,
   height = 500,
 }: LineChartByLocationAndStatusProps) {
@@ -26,7 +28,7 @@ export function drawLineChartByLocationAndStatus({
   const chartWidth = width - margin.left - margin.right;
   const chartHeight = height - margin.top - margin.bottom;
 
-  const sortedData = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const sortedData = [...data].toSorted((a, b) => a.date.getTime() - b.date.getTime());
 
   const svg = d3
     .select(selector)
@@ -38,16 +40,17 @@ export function drawLineChartByLocationAndStatus({
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
+  const timeRange: [Date, Date] = monthsFilter == 0 ? d3.extent(sortedData, d => d.date) : [getRelativeDateMonths(-monthsFilter), new Date()];
+
   // X scale (dates)
   const x = d3.scaleTime()
-    .domain(d3.extent(sortedData, d => d.date) as [Date, Date])
+    .domain(timeRange)
     .range([0, chartWidth]);
 
   // Y scale (numeric values)
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(sortedData, d => d.value)!])
-    .nice()
+    .domain([0, d3.max(data, d => d.value)!])
     .range([chartHeight, 0]);
 
   // Color scale - same as original
@@ -70,10 +73,9 @@ export function drawLineChartByLocationAndStatus({
     .attr("dy", ".15em")
     .attr("transform", "rotate(-45)");
 
-  g.append("g")
-  .call(
+  g.append("g").call(
     d3.axisLeft(y)
-      .tickValues(d3.range(0, Math.ceil(d3.max(sortedData, d => d.value)!) + 1))
+      .tickValues(pixelAlignedTicks(y, 20, chartHeight))
       .tickFormat(d3.format("d"))
   );
 
@@ -124,8 +126,8 @@ export function drawLineChartByLocationAndStatus({
   // Add tooltip to all points
   g.selectAll("circle")
     .on("mouseover", (event, d: any) => {
-      const statusLabel = d.status === 'inProgress' ? 'In Progress' : 
-                         d.status.charAt(0).toUpperCase() + d.status.slice(1);
+      const statusLabel = d.status === 'inProgress' ? 'In Progress' :
+        d.status.charAt(0).toUpperCase() + d.status.slice(1);
       tooltip.style("opacity", 1)
         .html(`<strong>${d.location}</strong><br/>Status: ${statusLabel}<br/>Date: ${d3.timeFormat("%b %d, %Y")(d.date)}<br/>Count: ${d.value}`);
     })
@@ -143,7 +145,7 @@ export function drawLineChartByLocationAndStatus({
 
   const labels = {
     submitted: "Submitted",
-    inProgress: "In Progress", 
+    inProgress: "In Progress",
     addressed: "Addressed"
   };
 
