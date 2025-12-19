@@ -1,5 +1,5 @@
 import { findJurisdictionsByName } from "@/services/JurisdictionGisService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import AsyncSelect from "react-select/async";
 
 interface Option {
@@ -23,14 +23,22 @@ export default function JurisdictionSelector({
   onBlur,
 }: JurisdictionSelectorProps) {
   const [defaultOptions, setDefaultOptions] = useState<Option[]>();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadOptions = useCallback(
-    async (inputValue: string) => {
-      try {
-        return await findJurisdictionsByName(inputValue, exclude);
-      } catch {
-        return [];
+    (inputValue: string, callback: (options: Option[]) => void) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
       }
+
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const result = await findJurisdictionsByName(inputValue, exclude);
+          callback(result);
+        } catch {
+          callback([]);
+        }
+      }, 300); // 300ms debounce delay
     },
     [exclude]
   );
@@ -41,12 +49,12 @@ export default function JurisdictionSelector({
         const data = await findJurisdictionsByName("", exclude);
         setDefaultOptions(data);
       } catch {
-
+        setDefaultOptions([]);
       }
-    }
+    };
 
     loadAll();
-  }, [])
+  }, [exclude]);
 
   return (
     <AsyncSelect
