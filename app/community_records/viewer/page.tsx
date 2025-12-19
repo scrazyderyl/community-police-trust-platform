@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { drawGroupedBarChart, BarData } from "@/lib/client/visualization/groupedBarChart";
-import { drawLineChartByLocationAndStatus } from "@/lib/client/visualization/lineGraph";
+import { drawLineChartByLocationAndStatus, LineDataByLocationAndStatus } from "@/lib/client/visualization/lineGraph";
 import * as d3 from "d3";
 import JurisdictionSelector from "@/app/editor/[jurisdiction_id]/_components/JurisdictionSelector";
 import { ComplaintRecord } from "@/lib/types/community_tracker";
@@ -16,28 +16,15 @@ interface CategoryCounts {
   [category: string]: Counts;
 }
 
-interface LegendProps {
-  colors: Record<string, string>;
-}
-
 interface TimeRangeFilterProps {
   selectedRange: string;
   onRangeChange: (range: string) => void;
 }
 
-function getCategoryFromStatus(status: string) {
-  switch (status) {
-    case "Filed":
-    case "Withdrawn":
-      return "submitted";
-    case "Under Review":
-      return "inProgress";
-    case "Resolved":
-    case "Dismissed":
-      return "addressed";
-    default:
-      return undefined;
-  }
+function getCategory(record) {
+  if (record.resolution) return "addressed";
+  if (record.updates && record.updates.length > 0) return "inProgress";
+  return "submitted";
 }
 
 function summarizeRecords(data: ComplaintRecord[]) {
@@ -46,7 +33,6 @@ function summarizeRecords(data: ComplaintRecord[]) {
   data.forEach((record) => {
     const jurisdictionId = record.jurisdiction?.value;
     const category = record.category;
-    const status = record.status;
 
     // Categorize by jurisdiction
     if (!summary[jurisdictionId]) {
@@ -60,7 +46,7 @@ function summarizeRecords(data: ComplaintRecord[]) {
       categorySummary[category] = { submitted: 0, inProgress: 0, addressed: 0 };
     }
 
-    const categoryKey = getCategoryFromStatus(status);
+    const categoryKey = getCategory(record);
 
     if (categoryKey) {
       categorySummary[category][categoryKey] += 1;
@@ -108,6 +94,161 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
   );
 };
 
+function buildCumulativeLineDataByLocation(
+  records: ComplaintRecord[],
+  selectedTimeRange: string,
+  selectedLocations: { value: string; label: string }[],
+  gisIndex: Record<string, { name: string }>
+): LineDataByLocationAndStatus[] {
+  const today = new Date();
+  const months = parseInt(selectedTimeRange);
+  const earliestDate = months === 0 ? null : new Date(today);
+  if (earliestDate) earliestDate.setMonth(today.getMonth() - months);
+
+  // Filter records by selected locations
+  const selectedLocationValues = new Set(selectedLocations.map(l => l.value));
+  const filteredRecords =
+    selectedLocations.length > 0
+      ? records.filter(r => selectedLocationValues.has(r.jurisdiction.value))
+      : records;
+
+  // Aggregate deltas per day / location / status
+  const aggregated: Record<string, Record<string, { Filed: number; "Under Review": number; Resolved: number }>> = {};
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+
+  const applyDelta = (date: Date, locId: string, status: keyof typeof aggregated[string][string], delta: number) => {
+    const key = dayKey(date);
+    const byDate = aggregated[key] ??= {};
+    const byLoc = byDate[locId] ??= { Filed: 0, "Under Review": 0, Resolved: 0 };
+    byLoc[status] += delta;
+  };
+
+  // Build status transitions per record
+  for (const record of filteredRecords) {
+    const locId = record.jurisdiction.value;
+    const when = new Date(record.when);
+    if (earliestDate && when < earliestDate) continue;
+
+    const hasUpdates = record.updates.length > 0;
+    const resolvedAt = record.resolution?.date ? new Date(record.resolution.date) : null;
+
+    const underReviewStart =
+      hasUpdates
+        ? new Date(record.updates[0].date)
+        : record.status !== "Filed" || resolvedAt
+          ? when
+          : null;
+
+    applyDelta(when, locId, "Filed", 1);
+
+    if (underReviewStart) {
+      applyDelta(underReviewStart, locId, "Filed", -1);
+      applyDelta(underReviewStart, locId, "Under Review", 1);
+    }
+
+    if (resolvedAt) {
+      if (underReviewStart && resolvedAt >= underReviewStart) {
+        applyDelta(resolvedAt, locId, "Under Review", -1);
+      } else {
+        applyDelta(resolvedAt, locId, "Filed", -1);
+      }
+      applyDelta(resolvedAt, locId, "Resolved", 1);
+    }
+  }
+
+  // Prefix sum deltas to cumulative counts per location
+  const dates = Object.keys(aggregated).sort();
+  const running: Record<string, { Filed: number; "Under Review": number; Resolved: number }> = {};
+  const raw: LineDataByLocationAndStatus[] = [];
+
+  for (const date of dates) {
+    const dateObj = new Date(date);
+    for (const [locId, deltas] of Object.entries(aggregated[date])) {
+      const prev = running[locId] ??= { Filed: 0, "Under Review": 0, Resolved: 0 };
+
+      prev.Filed += deltas.Filed;
+      prev["Under Review"] += deltas["Under Review"];
+      prev.Resolved += deltas.Resolved;
+
+      const locationName = gisIndex[locId]?.name || locId;
+
+      raw.push(
+        { date: dateObj, location: locationName, status: "Filed", value: prev.Filed },
+        { date: dateObj, location: locationName, status: "Under Review", value: prev["Under Review"] },
+        { date: dateObj, location: locationName, status: "Resolved", value: prev.Resolved }
+      );
+    }
+  }
+
+  // Extend each line to today using its last known value
+  const todayKey = dayKey(today);
+  const lastSeen = new Map<string, LineDataByLocationAndStatus>();
+
+  for (const p of raw) {
+    const key = `${p.location}\0${p.status}`;
+    const prev = lastSeen.get(key);
+    if (!prev || p.date > prev.date) lastSeen.set(key, p);
+  }
+
+  for (const p of lastSeen.values()) {
+    if (dayKey(p.date) !== todayKey) {
+      raw.push({ ...p, date: today });
+    }
+  }
+
+  // Group by location then status for per-line compression
+  const grouped = new Map<string, Map<string, LineDataByLocationAndStatus[]>>();
+
+  for (const p of raw) {
+    let byStatus = grouped.get(p.location);
+    if (!byStatus) {
+      byStatus = new Map();
+      grouped.set(p.location, byStatus);
+    }
+
+    let arr = byStatus.get(p.status);
+    if (!arr) {
+      arr = [];
+      byStatus.set(p.status, arr);
+    }
+
+    arr.push(p);
+  }
+
+  const final: LineDataByLocationAndStatus[] = [];
+
+  // Remove middle points of flat runs (no three identical consecutive values)
+  for (const byStatus of grouped.values()) {
+    for (const points of byStatus.values()) {
+      points.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+      let prev: LineDataByLocationAndStatus | undefined;
+      let curr: LineDataByLocationAndStatus | undefined;
+
+      for (let i = 0; i < points.length; i++) {
+        const next = points[i + 1];
+
+        prev = curr;
+        curr = points[i];
+
+        // Skip if surrounded by same-value neighbors
+        if (
+          prev &&
+          next &&
+          prev.value === curr.value &&
+          curr.value === next.value
+        ) {
+          continue;
+        }
+
+        final.push(curr);
+      }
+    }
+  }
+
+  return final;
+}
+
 const Community_tracker = () => {
   const [records, setRecords] = useState<ComplaintRecord[]>([]);
   const [gisIndex, setGisIndex] = useState<Record<string, { name: string }>>({});
@@ -127,6 +268,8 @@ const Community_tracker = () => {
     if (selectedLocations.length > 0) {
       const locationIds = new Set(selectedLocations.map(loc => loc.value));
       filtered = filtered.filter(record => locationIds.has(record.jurisdiction.value));
+    } else {
+      return [];
     }
 
     if (selectedTimeRange !== '0') {
@@ -185,48 +328,18 @@ const Community_tracker = () => {
     }
   };
 
+
   // Draw line chart with date-based x-axis
   const drawLineChart = () => {
     // Clear chart
     d3.select("#linechart").selectAll("*").remove();
 
     if (filteredRecords.length > 0) {
-      // Aggregate by date, location, and status
-      const aggregated: Record<string, Record<string, Record<string, number>>> = {};
-
-      for (const record of filteredRecords) {
-        const key = new Date(record.when).toISOString().split("T")[0];
-        const locId = record.jurisdiction.value;
-        const category = getCategoryFromStatus(record.status);
-
-        // Date bins
-        if (!aggregated[key]) {
-          aggregated[key] = {};
-        }
-
-        // Location bins
-        if (!aggregated[key][locId]) {
-          aggregated[key][locId] = { submitted: 0, inProgress: 0, addressed: 0 };
-        }
-
-        // Status bins
-        aggregated[key][locId][category] = (aggregated[key][locId][category] || 0) + 1;
-      };
-
-      const finalLineData = Object.entries(aggregated).flatMap(([date, locations]) =>
-        Object.entries(locations).flatMap(([locationId, statuses]) =>
-          Object.entries(statuses).map(([status, count]) => ({
-            date: new Date(date),
-            location: gisIndex[locationId]?.name || locationId,
-            status,
-            value: count
-          }))
-        )
-      );
+      const extendedLineData = buildCumulativeLineDataByLocation(records, selectedTimeRange, selectedLocations, gisIndex);
 
       drawLineChartByLocationAndStatus({
         selector: "#linechart",
-        data: finalLineData,
+        data: extendedLineData,
         monthsShown: parseInt(selectedTimeRange)
       });
     } else {
@@ -272,7 +385,7 @@ const Community_tracker = () => {
         Misconduct Complaint Record From Community
       </h1>
       <p className="w-3/4 text-center bg-gray-200 p-5 text-black text-sm mt-4 rounded-md leading-relaxed">
-        This page contains community-reported cases when they filed a police complaint in Allegheny County. The data will not be complete since not all community members use this website. We show only the counts, and nothing personal is collected or shown here. We also show data from the last one year.
+        This page contains community-reported cases when they filed a police complaint in Allegheny County. The data will not be complete since not all community members use this website. We show only the counts, and nothing personal is collected or shown here.
       </p>
       <div className="flex items-center justify-center mt-6 space-x-4">
         <a href="/community_records/file" className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
@@ -341,11 +454,9 @@ const Community_tracker = () => {
           </tbody>
         </table>
 
-        <div id="chart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto"></div>
-
         <div className="mt-4 max-w-md mx-auto">
           <label className="block text-sm font-medium text-gray-700 mb-2 align=middle">
-            Filter Locations
+            Select Locations
           </label>
           <div>
             <JurisdictionSelector
@@ -362,7 +473,11 @@ const Community_tracker = () => {
           />
         </div>
 
-        <div id="linechart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto"></div>
+        <div id="chart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto"></div>
+
+        <div id="linechart" className="mt-12 bg-white shadow-md p-4 rounded-md overflow-auto">
+          Time chart data is calculated differently and may not match the bar chart.
+        </div>
       </div>
       <br />
     </div>

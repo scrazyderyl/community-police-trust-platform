@@ -2,9 +2,10 @@ import { getRelativeDateMonths } from "@/lib/util/date";
 import * as d3 from "d3";
 import { pixelAlignedTicks } from "./util";
 
-interface LineDataByLocationAndStatus {
+export interface LineDataByLocationAndStatus {
   date: Date;
   status: string;
+  location: string;
   value: number;
 }
 

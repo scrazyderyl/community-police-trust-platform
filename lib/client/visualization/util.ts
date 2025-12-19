@@ -12,7 +12,7 @@ export function pixelAlignedTicks(
   const maxTicks = Math.floor(height / minPixelStep);
 
   // numeric step that fills the space as much as possible
-  const step = Math.ceil(range / maxTicks);
+  const step = Math.floor(range / maxTicks);
 
   return d3.range(min, max + step, step);
 }
